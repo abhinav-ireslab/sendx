@@ -22,8 +22,8 @@ pipeline {
 stage('Push image') {
       
         docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
-	app.'docker login -u docker030303 -p Abhinav@123Ires'
-        app.push("sendx:latest")
+	sh.'docker login -u docker030303 -p Abhinav@123Ires'
+        sh.push("sendx:latest")
 	      
 	      
       }
