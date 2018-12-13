@@ -21,7 +21,7 @@ pipeline {
 	  stage('Push image') {
       	agent any
 		  steps{
-			  docker.withRegistry('https://hub.docker.com/', 'docker') {
+			  withRegistry('https://hub.docker.com/', 'docker') {
 
         		def customImage = docker.build("docker030303/sendx:1")
 
