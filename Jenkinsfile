@@ -14,21 +14,11 @@ pipeline {
     } 
   stage('Docker Build') {
       agent any
-      steps {
-        sh 'docker build -t docker030303/sendx:1 .'
-      }
+	  withDockerRegistry(credentialsId: 'docker030303', url: 'https://hub.docker.com/r/docker030303/sendx/') {
+          // we give the image the same version as the .war package
+          def image = docker.build("docker030303/sendx:1")
+          image.push()
+	} 
     }
-	  stage('Push image') {
-      	agent any
-		  steps{
-			  withRegistry('https://hub.docker.com/', 'docker') {
-
-        		def customImage = build("docker030303/sendx:1")
-
-			/* Push the container to the custom Registry */
-			customImage.push()
-		    }
-		  }
-	}      
   }
 }
