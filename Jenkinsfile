@@ -18,5 +18,15 @@ pipeline {
         sh 'docker build -t sendx:latest .'
       }
     }
+	
+  stage('Docker push{
+      agent any
+      steps {
+        docker.withRegistry('https://registry.hub.docker.com', 'docker030303') {
+        app.push("${env.BUILD_NUMBER}")
+        app.push("latest")	  
+	}
+      }
+	}
   }
 }
