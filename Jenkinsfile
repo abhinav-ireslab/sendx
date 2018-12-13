@@ -23,8 +23,8 @@ pipeline {
       agent any
       steps {
         docker.withRegistry('https://registry.hub.docker.com', 'docker030303') {
-        app.push("${env.BUILD_NUMBER}")
-        app.push("latest")	  
+        app.push(sendx)
+        app.push('latest')	  
 	}
       }
 	}
