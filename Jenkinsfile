@@ -15,6 +15,7 @@ pipeline {
   stage('Docker Build') {
       agent {
 	docker {
+		steps {
 	  withDockerRegistry(credentialsId: 'docker030303', url: 'https://hub.docker.com/r/docker030303/sendx/') {
           // we give the image the same version as the .war package
           def image = docker.build("docker030303/sendx:1")
@@ -23,5 +24,6 @@ pipeline {
 	}
     }
   }
+}
 }
 }
