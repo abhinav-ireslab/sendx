@@ -19,12 +19,13 @@ pipeline {
       }
     }
 	  stage('Docker Push') {
-		  agent docker {
+		  agent { docker {
 		  	docker.withRegistry(credentialsId: 'docker030303', url: 'https://hub.docker.com/r/docker030303/sendx/') {
 
 			docker.image('sendx').push()
 		  }
 	  }
+	}
   }
 }
 }
