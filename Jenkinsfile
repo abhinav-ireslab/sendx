@@ -21,8 +21,13 @@ pipeline {
 	  stage('Push image') {
       	agent any
 		  steps{
-			sh 'docker login -u docker030303 -p Abhinav@123Ires'
-		  	sh 'docker push docker030303/sendx:1'
+			  docker.withRegistry('https://hub.docker.com/', '${docker}') {
+
+        		def customImage = docker.build("docker030303/sendx:1")
+
+			/* Push the container to the custom Registry */
+			customImage.push()
+		    }
 		  }
 	}      
   }
