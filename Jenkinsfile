@@ -23,7 +23,7 @@ pipeline {
 		  steps{
 			  withRegistry('https://hub.docker.com/', 'docker') {
 
-        		def customImage = docker.build("docker030303/sendx:1")
+        		def customImage = build("docker030303/sendx:1")
 
 			/* Push the container to the custom Registry */
 			customImage.push()
