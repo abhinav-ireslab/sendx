@@ -20,7 +20,7 @@ environment {
   stage('Docker Build') {
 	  steps {
 		  script {
-		  	def image = docker.build registry + ":latest"
+		  	def image = docker.build registry
 			  image.push()
 		  }
 	  }
