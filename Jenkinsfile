@@ -19,7 +19,7 @@ pipeline {
       }
     }
 	
-  stage('Docker push{
+  stage('Docker push) {
       agent any
       steps {
         docker.withRegistry('https://registry.hub.docker.com', 'docker030303') {
