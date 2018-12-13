@@ -19,9 +19,10 @@ pipeline {
       }
     }
 	  stage('Push image') {
-      
-        sh 'docker push docker030303/sendx:latest'
-	
+      	agent any
+		  steps{
+		  	sh 'docker push docker030303/sendx:latest'
+		  }
 	}      
   }
 }
