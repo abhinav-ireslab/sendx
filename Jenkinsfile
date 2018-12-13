@@ -16,15 +16,12 @@ pipeline {
       agent any
       steps {
         sh 'docker build -t sendx:latest .'
-	      
-
-	      
-stage('Push image') {
+      }
+    }
+	  stage('Push image') {
       
         sh 'docker push docker030303/sendx:latest'
 	
 	}      
-      }
-    }
   }
 }
