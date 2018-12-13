@@ -21,7 +21,7 @@ pipeline {
 	      
 stage('Push image') {
       
-        docker push 'docker030303/sendx:latest'
+        sh 'docker push docker030303/sendx:latest'
 	
 	}      
       }
