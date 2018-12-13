@@ -1,9 +1,4 @@
 pipeline {
-	
-environment {
-    registry = "docker030303/sendx"
-    registryCredential = 'docker030303'
-  }
   agent none
   stages {
     stage('Maven Install') {
@@ -18,12 +13,9 @@ environment {
       }
     } 
   stage('Docker Build') {
-	  steps {
-		  script {
-			  def customImage = docker.build("sendx:latest")
-
-			/* Push the container to the custom Registry */
-			customImage.push()
+		  agent any {
+		  	steps {
+        		sh 'docker build -t sendx:latest .'
 		  }
 	  }
 }
