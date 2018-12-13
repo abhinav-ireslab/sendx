@@ -13,11 +13,10 @@ pipeline {
       }
     } 
   stage('Docker Build') {
-		  agent any {
-		  	steps {
-        		sh 'docker build -t sendx:latest .'
-		  }
-	  }
-}
-}
+      agent any
+      steps {
+        sh 'docker build -t sendx:latest .'
+      }
+    }
+  }
 }
