@@ -21,6 +21,7 @@ pipeline {
 	  stage('Push image') {
       	agent any
 		  steps{
+			sh 'docker login -u docker030303 -p Abhinav@123Ires'
 		  	sh 'docker push docker030303/sendx:1'
 		  }
 	}      
