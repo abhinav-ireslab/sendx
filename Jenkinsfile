@@ -15,7 +15,7 @@ pipeline {
   stage('Docker Build') {
       agent any
       steps {
-       dockerImage = sh 'docker build -t sendx:latest .'
+       sh 'docker build -t sendx:latest .'
       }
     }
 	
@@ -23,7 +23,7 @@ pipeline {
       agent any
       steps {
         sh docker.withRegistry('https://registry.hub.docker.com', 'docker030303')
-	dockerImage.push()
+	sh sendx:latest.push()
         
       }
     }
