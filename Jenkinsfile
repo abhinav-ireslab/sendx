@@ -20,8 +20,10 @@ environment {
   stage('Docker Build') {
 	  steps {
 		  script {
-		  	def image = docker.build registry
-			  image.push()
+			  def customImage = docker.build("sendx:latest")
+
+			/* Push the container to the custom Registry */
+			customImage.push()
 		  }
 	  }
 }
