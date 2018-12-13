@@ -22,7 +22,7 @@ pipeline {
   stage('Docker push') {
       agent any
       steps {
-        sh docker.withRegistry('https://registry.hub.docker.com', 'docker030303') {
+        sh docker.withRegistry('https://registry.hub.docker.com', '--username docker030303 --password-Abhinav@123Ires') {
         app.push(sendx)
         app.push('latest')	  
 	}
