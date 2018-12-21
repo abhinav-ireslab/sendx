@@ -1455,7 +1455,7 @@ public class CommonServiceImpl  implements CommonService {
 		
 		}	
 			
-		String invoice = "<!DOCTYPE html>\r\n" + 
+		String invoice = "\r<!DOCTYPE html>\r\n" + 
 				"<html>\r\n" + 
 				"\r\n" + 
 				"<head>\r\n" + 
@@ -1697,7 +1697,7 @@ public class CommonServiceImpl  implements CommonService {
 				"</html>";
 		//System.out.println("invoice 1 ---------- "+invoice);
 		
-		String receipt = "<!DOCTYPE html>\r\n" + "<html>\r\n" + "\r\n" + "<head>\r\n"
+		String receipt = "\r<!DOCTYPE html>\r\n" + "<html>\r\n" + "\r\n" + "<head>\r\n"
 				+ "    <meta charset=\"utf-8\" />\r\n"
 				+ "    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\r\n"
 				+ "    <title>Receipt</title>\r\n"
@@ -2526,7 +2526,7 @@ public class CommonServiceImpl  implements CommonService {
 		
 		}
 			
-		String invoice = "<!DOCTYPE html>\r\n" + 
+		String invoice = "\r<!DOCTYPE html>\r\n" + 
 				"<html>\r\n" + 
 				"\r\n" + 
 				"<head>\r\n" + 
@@ -2770,7 +2770,7 @@ public class CommonServiceImpl  implements CommonService {
 		
 		//System.out.println("invoice 2 ------------------------- "+invoice);
 		
-		String receipt = "<!DOCTYPE html>\r\n" + "<html>\r\n" + "\r\n" + "<head>\r\n"
+		String receipt = "\r<!DOCTYPE html>\r\n" + "<html>\r\n" + "\r\n" + "<head>\r\n"
 				+ "    <meta charset=\"utf-8\" />\r\n"
 				+ "    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />\r\n"
 				+ "    <title>Receipt</title>\r\n"
