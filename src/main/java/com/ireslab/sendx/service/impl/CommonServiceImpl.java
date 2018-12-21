@@ -2808,7 +2808,7 @@ public class CommonServiceImpl  implements CommonService {
 				+ "        .text-left {\r\n" + "            text-align: left;\r\n" + "        }\r\n" + "\r\n"
 				+ "        .billTable {\r\n" + "            width: 100%;\r\n" + "        }\r\n" + "\r\n"
 				+ "        .billTable th,\r\n" + "        .billTable td {\r\n" + "            padding: 8px 5px;\r\n"
-				+ "        }\r\n" + "\r\nerror parsing HTTP 404 response body: invalid character '<' looking for beginning of value: "<!doctype" + "        .noMargin {\r\n" + "            margin: 0px;\r\n"
+				+ "          }\r\n" + "\r\nerror parsing HTTP 404 response body: invalid character '<' looking for beginning of value: "<!doctype" + "        .noMargin {\r\n" + "            margin: 0px;\r\n"
 				+ "        }\r\n" + "\r\n" + "        .address {\r\n" + "            width: 300px;\r\n"
 				+ "            word-wrap: break-word;\r\n" + "        }\r\n" + "    </style>\r\n" + "</head>\r\n"
 				+ "\r\n" + "<body>\r\n" + "    <div class=\"container\">\r\n" + "        <div class=\"header\">\r\n"
