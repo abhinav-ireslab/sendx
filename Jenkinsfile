@@ -22,7 +22,7 @@ pipeline {
        agent any
        steps {
        sh docker.withRegistry('https://registry.hub.docker.com', 'docker030303'){
-	sh 'docker push docker030303.hub.docker.com/endx:latest'
+	sh 'docker push docker030303 / sendx'
 
        }
      }
