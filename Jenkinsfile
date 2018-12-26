@@ -12,12 +12,7 @@ pipeline {
 		sh 'mvn clean install'
       }
     } 
-  stage('Docker Build') {
-      agent any
-      steps {
-      #sh 'docker build -t sendx:latest .'
-      }
-    }
+
    stage('Docker push') {
        agent any
        steps {
