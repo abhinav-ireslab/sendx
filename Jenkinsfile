@@ -20,11 +20,12 @@ pipeline {
     }
        
        stage('Docker push') {
-       agent none
+       agent {
        steps {
 	       sh docker.withRegistry('https://registry.hub.docker.com', 'docker030303'){
        sh 'docker login -u docker030303 -p Abhinav@123Ires'
        sh 'docker push docker030303/sendx'
+	  }
 	}
      }
    }
