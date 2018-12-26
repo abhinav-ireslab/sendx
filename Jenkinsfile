@@ -22,7 +22,7 @@ pipeline {
    stage('Docker push') {
        agent any
        steps {
-       sh docker.withRegistry('https://registry.hub.docker.com', 'docker030303'){
+       sh docker.withRegistry('https://index.docker.io/v1/', 'docker030303'){
        def customImage =docker.build('sendx:latest')
        customImage.push()
 
