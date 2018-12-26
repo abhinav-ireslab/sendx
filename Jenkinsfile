@@ -20,7 +20,7 @@ pipeline {
     }
        
        stage('Docker push') {
-       agent none  
+       agent any  
        steps {
        sh 'docker login -u docker030303 -p Abhinav@123Ires'
      }
