@@ -84,6 +84,8 @@
 			<groupId>com.ireslab</groupId>
 	        <artifactId>sendx-common-lib</artifactId>
 	        <version>1.1</version>
+			<scope>system</scope>
+		<systemPath>${project.basedir}/lib/sendx-common-lib-1.1.jar</systemPath>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.modelmapper/modelmapper -->
