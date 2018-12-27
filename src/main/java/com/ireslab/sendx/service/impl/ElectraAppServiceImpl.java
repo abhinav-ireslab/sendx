@@ -1,4 +1,4 @@
-package com.ireslab.sendx.service.impl;
+/*package com.ireslab.sendx.service.impl;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +18,6 @@ import com.ireslab.sendx.electra.Status;
 import com.ireslab.sendx.electra.model.ClientProfile;
 import com.ireslab.sendx.electra.model.ClientRegistrationRequest;
 import com.ireslab.sendx.electra.model.ClientRegistrationResponse;
-import com.ireslab.sendx.electra.model.ClientSubscriptionDto;
 import com.ireslab.sendx.electra.model.ClientSubscriptionRequest;
 import com.ireslab.sendx.electra.model.ClientSubscriptionResponse;
 import com.ireslab.sendx.electra.model.ClientSubscriptionUpdateRequest;
@@ -188,9 +186,9 @@ public class ElectraAppServiceImpl implements ElectraAppService {
 
 			LOG.debug("Company Code not Exist, Registering as Client ");
 
-			/**
+			*//**
 			 * Registering as client
-			 */
+			 *//*
 			ClientRegistrationRequest clientRegistrationRequest = new ClientRegistrationRequest();
 
 			List<ClientProfile> clientProfileList = new ArrayList<>();
@@ -217,9 +215,9 @@ public class ElectraAppServiceImpl implements ElectraAppService {
 
 			
 
-			/**
+			*//**
 			 * Registering client as user to SGT
-			 */
+			 *//*
 			signupResponse = signupService.registerAccount(signupRequest);
 		}
 
@@ -263,10 +261,10 @@ public class ElectraAppServiceImpl implements ElectraAppService {
 	}
 
 	
-	/**
+	*//**
 	 * @param key
 	 * @return
-	 */
+	 *//*
 	private String getMessage(String key) {
 		return messageSource.getMessage(key, null, Locale.getDefault());
 	}
@@ -278,3 +276,4 @@ public class ElectraAppServiceImpl implements ElectraAppService {
 	
 
 }
+*/

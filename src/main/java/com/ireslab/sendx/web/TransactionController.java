@@ -28,7 +28,7 @@ import com.ireslab.sendx.service.TransactionService;
 import com.ireslab.sendx.springsecurity.SpringSecurityUtil;
 
 /**
- * @author Nitin
+ * @author iRESlab
  *
  */
 @RestController
@@ -42,27 +42,33 @@ public class TransactionController extends BaseController {
 	@Autowired
 	private TransactionService transactionService;
 
+	
 	/**
-	 * @param cashOutRequest
+	 * use to load money in his account.
+	 * 
+	 * @param loadTokensRequest
 	 * @return
 	 * @throws JsonProcessingException
 	 */
 	@RequestMapping(value = "/loadTokens", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public LoadTokensResponse loadTokens(@RequestBody LoadTokensRequest loadTokensRequest)
 			throws JsonProcessingException {
-
+		LOG.info("Request for load tokens  " );
 		LoadTokensResponse loadTokensResponse = null;
 
 		nameRequestThread((loadTokensRequest.getCountryDialCode() + loadTokensRequest.getMobileNumber()),
 				RequestType.LOAD_TOKENS, loadTokensRequest);
 
 		loadTokensResponse = transactionService.handleLoadTokens(loadTokensRequest);
-		LOG.debug("JSON Response - " + objectWriter.writeValueAsString(loadTokensResponse));
+		LOG.info("Response sent for load tokens ");
 
 		return loadTokensResponse;
 	}
 
+	
 	/**
+	 * use to transfer amount user's account to others user's account.
+	 * 
 	 * @param sendTokensRequest
 	 * @return
 	 * @throws JsonProcessingException
@@ -70,19 +76,21 @@ public class TransactionController extends BaseController {
 	@RequestMapping(value = "/transferTokens", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public SendTokensResponse transferTokens(@RequestBody SendTokensRequest sendTokensRequest)
 			throws JsonProcessingException {
-
+		LOG.debug("Request for token transfer - " + objectWriter.writeValueAsString(sendTokensRequest));
 		SendTokensResponse sendTokensResponse = null;
 
 		nameRequestThread((sendTokensRequest.getSenderCountryDialCode() + sendTokensRequest.getSenderMobileNumber()),
 				RequestType.TRANSFER_TOKENS, sendTokensRequest);
 
 		sendTokensResponse = transactionService.handleTokensTransfer(sendTokensRequest);
-		LOG.debug("Token transfer response sent - " + objectWriter.writeValueAsString(sendTokensResponse));
+		LOG.info("Token transfer response sent - " + objectWriter.writeValueAsString(sendTokensResponse));
 
 		return sendTokensResponse;
 	}
 
 	/**
+	 * use to validate top up.
+	 * 
 	 * @param mobileNumber
 	 * @param countryDialCode
 	 * @return
@@ -101,18 +109,20 @@ public class TransactionController extends BaseController {
 			countryDialCode = usernameToken[0];
 		}
 
-		LOG.debug("Validate User TopUp request received - \n\t mobileNumber : " + mobileNumber + ",\n\t countryCode : "
+		LOG.info("Validate User TopUp request received - \n\t mobileNumber : " + mobileNumber + ",\n\t countryCode : "
 				+ countryDialCode);
 
 		validateUserTopUpResponse = transactionService.validateUserTopUp(BigInteger.valueOf(mobileNumber),
 				countryDialCode);
-		LOG.debug("Request Activation code response sent - "
+		LOG.info("Request Activation code response sent - "
 				+ objectWriter.writeValueAsString(validateUserTopUpResponse));
 
 		return validateUserTopUpResponse;
 	}
 
 	/**
+	 * use to transfer amount app wallet to his bank account.
+	 * 
 	 * @param cashOutRequest
 	 * @return
 	 * @throws JsonProcessingException
@@ -126,12 +136,14 @@ public class TransactionController extends BaseController {
 				RequestType.CASHOUT_TOKENS, cashOutRequest);
 
 		cashOutResponse = transactionService.handleCashOutTokens(cashOutRequest);
-		LOG.debug("CashOut Tokens response sent - " + objectWriter.writeValueAsString(cashOutResponse));
+		LOG.info("CashOut Tokens response sent" );
 
 		return cashOutResponse;
 	}
 
 	/**
+	 * use to get transaction history of the user.
+	 * 
 	 * @param cashOutRequest
 	 * @return
 	 * @throws JsonProcessingException
@@ -141,24 +153,31 @@ public class TransactionController extends BaseController {
 			throws JsonProcessingException {
 
 		TransactionHistoryResponse tnxHistoryResponse = null;
-		LOG.debug("Transaction History request received - " + objectWriter.writeValueAsString(tnxHistoryRequest));
+		LOG.info("Transaction History request received - " + objectWriter.writeValueAsString(tnxHistoryRequest));
 
 		tnxHistoryResponse = transactionService.handleTransactionHistory(tnxHistoryRequest);
-		LOG.debug("Transaction History response sent - " + objectWriter.writeValueAsString(tnxHistoryResponse));
+		LOG.info("Transaction History response sent ");
 
 		return tnxHistoryResponse;
 	}
 	
 	
+	/**
+	 * use to get transaction purpose list.
+	 * 
+	 * @param clientCorrelationId
+	 * @return
+	 * @throws JsonProcessingException
+	 */
 	@RequestMapping(value = "/getAllTransactionPurpose", method = RequestMethod.GET, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public TransactionPurposeResponse getAllTransactionPurpose(@RequestParam(value = "clientCorrelationId", required = true) String clientCorrelationId)
 			throws JsonProcessingException {
 
 		TransactionPurposeResponse transactionPurposeResponse = null;
-		LOG.debug("Transaction Purpose request received :- \n client correlation Id - " + clientCorrelationId );
+		LOG.info("Transaction Purpose request received :- \n client correlation Id - " + clientCorrelationId );
 
 		transactionPurposeResponse = transactionService.getAllTransactionPurpose(clientCorrelationId);
-		LOG.debug("Transaction History response sent - " + objectWriter.writeValueAsString(transactionPurposeResponse));
+		LOG.info("Transaction History response sent " );
 
 		return transactionPurposeResponse;
 	}

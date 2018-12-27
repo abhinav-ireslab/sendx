@@ -38,4 +38,8 @@ public interface AppStatusCodes {
 public static final Integer MONTHLY_TRANSACTION_LIMIT_REACHED = 702;
 	
 	public static final Integer DAILY_TRANSACTION_LIMIT_REACHED = 701;
+	
+	public static final Integer USER_SUSPENDED = 205;
+	
+	public static final Integer LOAD_TOKEN_FAILED = 4000;
 }

@@ -2,7 +2,6 @@ package com.ireslab.sendx.service.impl;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -15,8 +14,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Base64Utils;
 import org.springframework.web.client.HttpClientErrorException;
@@ -26,12 +23,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-
 import com.ireslab.sendx.electra.ElectraApiConfig;
 import com.ireslab.sendx.electra.dto.CashOutDto;
 import com.ireslab.sendx.electra.model.ClientInfoRequest;
 import com.ireslab.sendx.electra.model.ClientInfoResponse;
-import com.ireslab.sendx.electra.model.ClientProfile;
 import com.ireslab.sendx.electra.model.ClientRegistrationRequest;
 import com.ireslab.sendx.electra.model.ClientRegistrationResponse;
 import com.ireslab.sendx.electra.model.ClientSubscriptionRequest;
@@ -72,11 +67,9 @@ import com.ireslab.sendx.model.AgentRequest;
 import com.ireslab.sendx.model.AgentRequestBody;
 import com.ireslab.sendx.model.AgentResponse;
 import com.ireslab.sendx.model.CashOutRequest;
-import com.ireslab.sendx.model.CompanyCodeResponse;
 import com.ireslab.sendx.model.LoadTokensRequest;
 import com.ireslab.sendx.model.SendTokensRequest;
 import com.ireslab.sendx.model.SignupRequest;
-import com.ireslab.sendx.model.SubscriptionPlanResponse;
 import com.ireslab.sendx.model.UserAgentResponse;
 import com.ireslab.sendx.repository.AccountRepository;
 import com.ireslab.sendx.service.TransactionalApiService;
@@ -84,7 +77,7 @@ import com.ireslab.sendx.util.AppStatusCodes;
 import com.ireslab.sendx.util.Constants;
 
 /**
- * @author Nitin
+ * @author iRESlab
  *
  */
 @Service
@@ -120,22 +113,18 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 	@Autowired
 	private AccountRepository accountRepository;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.ireslab.sendx.service.TransactionalApiService#retrieveApiAccessToken( )
-	 */
+	
+	
 	private String retrieveApiAccessToken() {
 
 		if (accessToken == null || isAccessTokenExpired) {
 
-			LOG.debug("Requesting access token for Electra API authorization . . . .");
+			LOG.info("Requesting access token for Electra API authorization . . . .");
 			String endpointUrl = String.format(electraApiConfig.getAuthTokenEndpointUrl(),
 					electraApiConfig.getGrantType());
 
 			OAuth2Dto auth2Dto = (OAuth2Dto) invokeApi(endpointUrl, HttpMethod.POST, OAuth2Dto.class,
-					new GenericRequest(), true, false,false);
+					new GenericRequest(),false, true, false,false);
 
 			if (!auth2Dto.getErrors().isEmpty()) {
 
@@ -204,7 +193,7 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 
 		UserRegistrationResponse userRegistrationResponse = (UserRegistrationResponse) invokeApi(
 				userOnboardingEndpointUrl, HttpMethod.POST, UserRegistrationResponse.class,
-				electraUserRegistrationRequest, false, false,flag);
+				electraUserRegistrationRequest,false, false, false,flag);
 
 		// Account creation failed
 		if (userRegistrationResponse == null
@@ -218,10 +207,7 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 			return userProfiles;
 		}
 
-		/*java.lang.reflect.Type userProfileListType = new TypeToken<List<com.ireslab.sendx.model.UserProfile>>() {
-		}.getType();
-		modelMapper.getConfiguration().setAmbiguityIgnored(true);
-		userProfiles = modelMapper.map(userRegistrationResponse.getUsers(), userProfileListType);*/
+		
 		
 		UserProfile userProElectra = userRegistrationResponse.getUsers().get(0);
 
@@ -258,8 +244,7 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 
 		
 		
-		//String endpointUrl = String.format(electraApiConfig.getUserUpdationApiEndpointUrl(),
-		//		FORMAT_SPECIFIER);
+		
 		
 		String endpointUrl = String.format(electraApiConfig.getUserUpdationApiEndpointUrl(),
 				correlationId, FORMAT_SPECIFIER);
@@ -271,19 +256,21 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 				
 		users.add(profile);
 		
-		//users.add(userProfile);
 		
 		userRegistrationRequest = new UserRegistrationRequest().setUsers(users);
 		
 		LOG.info("API EndpointUrl to update user :" + endpointUrl);
 
 		UserRegistrationResponse clientRegistrationResponse = (UserRegistrationResponse) invokeApi(endpointUrl,
-				HttpMethod.PUT, UserRegistrationResponse.class, userRegistrationRequest, false, false,false);
+				HttpMethod.PUT, UserRegistrationResponse.class, userRegistrationRequest,false, false, false,false);
 		return clientRegistrationResponse;
 	}
 	
 	
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#invokeAgentOnboardingApi(com.ireslab.sendx.model.AgentRequest, java.lang.String)
+	 */
 	@Override
 	public com.ireslab.sendx.model.AgentResponse invokeAgentOnboardingApi(AgentRequest agentRequest, String correlationId) {
 
@@ -316,7 +303,7 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 
 		UserAgentRegistrationResponse userAgentRegistrationResponse = (UserAgentRegistrationResponse) invokeApi(
 				userAgentEndpointUrl, HttpMethod.POST, UserAgentRegistrationResponse.class,
-				electraAgentRegistrationRequest, false, false,false);
+				electraAgentRegistrationRequest,false, false, false,false);
 
 		// Account creation failed
 		if (userAgentRegistrationResponse == null
@@ -335,11 +322,9 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 				"Your request to become agent is registered and sent for approval.");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.ireslab.sendx.service.TransactionalApiService#
-	 * invokeLoadTokensTransactionalAPI(com.ireslab.sendx.model. LoadTokensRequest)
+	
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#invokeLoadTokensAPI(com.ireslab.sendx.model.LoadTokensRequest)
 	 */
 	@Override
 	public String invokeLoadTokensAPI(LoadTokensRequest loadTokensRequest) {
@@ -357,14 +342,28 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 			LOG.debug("Invoking Electra Load Token API with Request - "
 					+ objectWriter.writeValueAsString(tokenLifecycleManagementRequest));
 		} catch (Exception exp) {
-			// do nothing
+			
 		}
 
 		TokenLifecycleManagementResponse tokenLifecycleManagementResponse = (TokenLifecycleManagementResponse) invokeApi(
 				loadTokensEndpointUrl, HttpMethod.POST, TokenLifecycleManagementResponse.class,
-				tokenLifecycleManagementRequest, false, false,false);
+				tokenLifecycleManagementRequest,false, false, false,false);
 
 		// Account creation failed
+		if(tokenLifecycleManagementResponse != null ) {
+			if(tokenLifecycleManagementResponse.getErrors().size()>0) {
+				
+				Error error = tokenLifecycleManagementResponse.getErrors().get(0);
+				if(error.getCode() == 4000) {
+					return "op_line_full";
+				}
+				else {
+					return null;
+				}
+			}
+		}
+		
+		
 		if (tokenLifecycleManagementResponse == null
 				|| tokenLifecycleManagementResponse.getStatus().intValue() != HttpStatus.OK.value()) {
 
@@ -380,12 +379,9 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 		return tokenLifecycleManagementResponse.getAccountBalance();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.ireslab.sendx.service.TransactionalApiService#invokeTransferTokensAPI
-	 * (com.ireslab.sendx.model.SendTokensRequest)
+	
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#invokeTransferTokensAPI(com.ireslab.sendx.model.SendTokensRequest)
 	 */
 	@Override
 	public String invokeTransferTokensAPI(SendTokensRequest sendTokensRequest) {
@@ -406,12 +402,12 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 			LOG.debug("Invoking Electra Transfer Token API with Request - "
 					+ objectWriter.writeValueAsString(tokenLifecycleManagementRequest));
 		} catch (Exception exp) {
-			// do nothing
+			
 		}
 
 		TokenLifecycleManagementResponse tokenLifecycleManagementResponse = (TokenLifecycleManagementResponse) invokeApi(
 				loadTokensEndpointUrl, HttpMethod.POST, TokenLifecycleManagementResponse.class,
-				tokenLifecycleManagementRequest, false, false,false);
+				tokenLifecycleManagementRequest,false, false, false,false);
 
 		// Account creation failed
 		if (tokenLifecycleManagementResponse == null
@@ -429,12 +425,9 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 		return tokenLifecycleManagementResponse.getAccountBalance();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.ireslab.sendx.service.TransactionalApiService#invokeCashoutTokensAPI(
-	 * com.ireslab.sendx.model.CashOutRequest)
+	
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#invokeCashoutTokensAPI(com.ireslab.sendx.model.CashOutRequest)
 	 */
 	@Override
 	public String invokeCashoutTokensAPI(CashOutRequest cashOutTokensRequest) {
@@ -463,12 +456,12 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 			LOG.debug("Invoking Electra Transfer Token API with Request - "
 					+ objectWriter.writeValueAsString(tokenLifecycleManagementRequest));
 		} catch (Exception exp) {
-			// do nothing
+			
 		}
 
 		TokenLifecycleManagementResponse tokenLifecycleManagementResponse = (TokenLifecycleManagementResponse) invokeApi(
 				cashoutTokensEndpointUrl, HttpMethod.POST, TokenLifecycleManagementResponse.class,
-				tokenLifecycleManagementRequest, false, false,false);
+				tokenLifecycleManagementRequest,false, false, false,false);
 
 		// Account creation failed
 		if (tokenLifecycleManagementResponse == null
@@ -486,11 +479,9 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 		return tokenLifecycleManagementResponse.getAccountBalance();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.ireslab.sendx.service.TransactionalApiService#invokeUserProfileAPI(
-	 * java.lang.String)
+	
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#invokeUserProfileAPI(java.lang.String)
 	 */
 	@Override
 	public com.ireslab.sendx.model.UserProfile invokeUserProfileAPI(String userCorrelationId) {
@@ -500,7 +491,7 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 				userCorrelationId, FORMAT_SPECIFIER);
 
 		UserProfileResponse userProfileResponse = (UserProfileResponse) invokeApi(userProfileEndpointUrl,
-				HttpMethod.GET, UserProfileResponse.class, null, false, false,false);
+				HttpMethod.GET, UserProfileResponse.class, null, false, false, false,false);
 
 		if (userProfileResponse == null || userProfileResponse.getCode().intValue() != HttpStatus.OK.value()) {
 
@@ -521,9 +512,7 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 		userProfileModel.setIso4217CurrencyAlphabeticCode(electraUserProfile.getIso4217CurrencyAlphabeticCode());
 		userProfileModel.setCurrencySymbol(electraUserProfile.getCurrencySymbol());
 		electraUserProfile.getAssetDetails().forEach(accountBalance -> {
-			/*if (accountBalance.getAssetCode().equalsIgnoreCase(electraApiConfig.getTokenCode())) {
-				userProfileModel.setAccountBalance(accountBalance.getAssetQuantity());
-			}*/
+			
 			
 			if (accountBalance.getAssetCode().equalsIgnoreCase(account.getProfile().getCountry().getIso4217CurrencyAlphabeticCode())) {
 				userProfileModel.setAccountBalance(accountBalance.getAssetQuantity());
@@ -536,6 +525,9 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 		return userProfileModel;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#invokeGetAgentAPI(com.ireslab.sendx.model.AgentRequestBody)
+	 */
 	@Override
 	public AgentResponse invokeGetAgentAPI(AgentRequestBody agentRequestBody) {
 		accessTokenRetryCount = 0;
@@ -543,8 +535,7 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 
 		List<UserAgentRequest> agents = new ArrayList<>();
 
-/*		AgentRequest agent = new AgentRequest().setAgentMobNo(new Long(agentRequestBody.getMobileNumber() + ""))
-				.setCountryDialCode(agentRequestBody.getCountryDialCode());*/
+
 		
 		UserAgentRequest agent = new UserAgentRequest().setAgentMobNo(new Long(agentRequestBody.getMobileNumber() + ""))
 		.setCountryDialCode(agentRequestBody.getCountryDialCode());
@@ -558,11 +549,11 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 			LOG.debug("Invoking Electra get agent API with Request - "
 					+ objectWriter.writeValueAsString(electraAgentRegistrationRequest));
 		} catch (Exception exp) {
-			// do nothing
+			
 		}
 
 		UserAgentResponse userAgentResponse = (UserAgentResponse) invokeApi(getAgentEndpointUrl, HttpMethod.POST,
-				UserAgentResponse.class, electraAgentRegistrationRequest, false, false,false);
+				UserAgentResponse.class, electraAgentRegistrationRequest, false, false, false,false);
 
 		if (userAgentResponse == null || userAgentResponse.getCode().intValue() != HttpStatus.OK.value()) {
 
@@ -575,8 +566,7 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 		}
 
 		AgentResponse agentResponse = userAgentResponse.getAgentResponse();
-		// com.ireslab.sendx.model.AgentResponse agentResponseModel = new
-		// com.ireslab.sendx.model.AgentResponse();
+		
 
 		return agentResponse;
 	}
@@ -589,7 +579,7 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> T invokeApi(String endpointUrl, HttpMethod httpMethod, Class<T> responseClass,
-			GenericRequest genericRequest, boolean isAuthRequest, boolean isDirectRequest,boolean isClientUserRequest) {
+			GenericRequest genericRequest,boolean isCustomRequest, boolean isAuthRequest,  boolean isDirectRequest,boolean isClientUserRequest) {
 
 		GenericResponse genericResponse = null;
 		HttpEntity<?> apiResponse = null;
@@ -604,14 +594,18 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 			
 			apiEndpointUrl = String.format(electraApiConfig.getClientUserBaseUrl())
 					+ String.format(endpointUrl, retrieveApiAccessToken());
-		} else {
+		}
+		else if (isCustomRequest) {
+			apiEndpointUrl = String.format(endpointUrl, retrieveApiAccessToken());
+
+		}else {
 			apiEndpointUrl = String.format(electraApiConfig.getBaseUrl(), electraApiConfig.getApiVersion(),
 					electraApiConfig.getClientCorrelationId()) + String.format(endpointUrl, retrieveApiAccessToken());
 			
 			
 		}
 		
-		LOG.debug("Client User Endpoint Onboarding Url - "+apiEndpointUrl);
+		LOG.info("Client User Endpoint Onboarding Url - "+apiEndpointUrl);
 
 		if (httpHeaders == null) {
 			String plainCredentials = electraApiConfig.getClientId() + ":" + electraApiConfig.getClientSecret();
@@ -651,7 +645,7 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 			if (clientErrorException.getStatusCode().value() == HttpStatus.UNAUTHORIZED.value()) {
 
 				// Unauthorized - Access Token invalid or expired
-				LOG.debug("Unauthorized request | Access Token invalid or expired");
+				LOG.info("Unauthorized request | Access Token invalid or expired");
 				isAccessTokenExpired = true;
 
 			} else {
@@ -672,35 +666,35 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 			}
 
 			if (isAccessTokenExpired && ++accessTokenRetryCount < ACCESS_TOKEN_RETRY_LIMIT) {
-				invokeApi(endpointUrl, httpMethod, responseClass, genericRequest, isAuthRequest, false,false);
+				genericResponse = (GenericResponse)invokeApi(endpointUrl, httpMethod, responseClass, genericRequest,isCustomRequest, isAuthRequest, isDirectRequest,isClientUserRequest);
 			}
 
 		}
 		return (T) genericResponse;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#getAllExchangeDetails(java.lang.String)
+	 */
 	@Override
 	public ExchangeResponse getAllExchangeDetails(String userCorrelationId) {
 
 		String exchangeEndPointUrl = String.format(electraApiConfig.getExchangeDetailsApiEndpointUrl(),
 				userCorrelationId, FORMAT_SPECIFIER);
 
-		// System.out.println("exchangeEndPointUrl :"+exchangeEndPointUrl);
-
-		/*
-		 * String endpointUrl = String.format(electraApiConfig.getBaseUrl(),
-		 * electraApiConfig.getApiVersion()) +
-		 * String.format(electraApiConfig.getExchangeDetailsApiEndpointUrl(),
-		 * retrieveApiAccessToken()); System.out.println("endpointUrl  :"+endpointUrl);
-		 */
+		
+		
 		ExchangeResponse exchangeResponse = (ExchangeResponse) invokeApi(exchangeEndPointUrl, HttpMethod.GET,
-				ExchangeResponse.class, null, false, false,false);
+				ExchangeResponse.class, null, false, false, false,false);
 
-		// exchangeResponse.setStatus(status);
+		
 
 		return exchangeResponse;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#invokeUserClientOnboardingApi(com.ireslab.sendx.electra.model.ClientRegistrationRequest)
+	 */
 	@Override
 	public ClientRegistrationResponse invokeUserClientOnboardingApi(
 			ClientRegistrationRequest clientRegistrationRequest) {
@@ -713,11 +707,11 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 			LOG.debug("Invoking Electra User Client Onboarding API with Request - "
 					+ objectWriter.writeValueAsString(clientRegistrationRequest));
 		} catch (Exception exp) {
-			// do nothing
+			
 		}
 
 		clientResponse = (ClientRegistrationResponse) invokeApi(userOnboardingEndpointUrl, HttpMethod.POST,
-				ClientRegistrationResponse.class, clientRegistrationRequest, false, true,false);
+				ClientRegistrationResponse.class, clientRegistrationRequest, false, false, true,false);
 
 		// Account creation failed
 		if (clientResponse == null || clientResponse.getCode().intValue() != HttpStatus.OK.value()) {
@@ -734,11 +728,14 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 	}
 
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#invokeUserClientEntryOnboardingApi(com.ireslab.sendx.model.SignupRequest)
+	 */
 	@Override
 	public void invokeUserClientEntryOnboardingApi(SignupRequest signupRequest) {
 		accessTokenRetryCount = 0;
 
-		List<com.ireslab.sendx.model.UserProfile> userProfiles = null;
+		
 
 		String userOnboardingEndpointUrl = String.format(electraApiConfig.getUserClientEntryOnboardingApiEndpointUrl(),
 				FORMAT_SPECIFIER);
@@ -767,7 +764,7 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 
 		UserRegistrationResponse userRegistrationResponse = (UserRegistrationResponse) invokeApi(
 				userOnboardingEndpointUrl, HttpMethod.POST, UserRegistrationResponse.class,
-				electraUserRegistrationRequest, false, false,false);
+				electraUserRegistrationRequest, false, false, false,false);
 
 		// Account creation failed
 		if (userRegistrationResponse == null
@@ -778,81 +775,20 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 				LOG.error("Account creation on Electra failed | Error Code - " + userRegistrationResponse.getCode()
 						+ ", Error Message - " + userRegistrationResponse.getMessage() + ", Errors - " + errors);
 			}
-			// return userProfiles;
+			
 		}
 
-		/*
-		 * java.lang.reflect.Type userProfileListType = new
-		 * TypeToken<List<com.ireslab.sendx.model.UserProfile>>() { }.getType();
-		 * 
-		 * userProfiles = modelMapper.map(userRegistrationResponse.getUsers(),
-		 * userProfileListType); return userProfiles;
-		 */
+		
 
 	}
 
-	@Override
-	public CompanyCodeResponse invokeCompanyCodeAPI() {
-		LOG.info("Request for company code ");
-		accessTokenRetryCount = 0;
-
-		String apiEndpointUrl = String.format(electraApiConfig.getBaseUrl(), electraApiConfig.getApiVersion(), "")
-				+ String.format(electraApiConfig.getCompanyCodeApiEndpointUrl(), retrieveApiAccessToken());
-
-		if (httpHeaders == null) {
-			String plainCredentials = electraApiConfig.getClientId() + ":" + electraApiConfig.getClientSecret();
-			String base64ClientCredentials = new String(Base64Utils.encodeToString(plainCredentials.getBytes()));
-
-			httpHeaders = new HttpHeaders();
-			httpHeaders.add(AUTHORIZATION_HEADER, electraApiConfig.getHeaderAuthorization() + base64ClientCredentials);
-			// httpHeaders.set(ACCEPT_HEADER, electraApiConfig.getHeaderAccept());
-			httpHeaders.set(CONTENT_TYPE_HEADER, electraApiConfig.getHeaderContentType());
-			httpHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-		}
-
-		HttpEntity<String> entity = new HttpEntity<String>("parameters", httpHeaders);
-
-		ResponseEntity<CompanyCodeResponse> result = restTemplate.exchange(apiEndpointUrl, HttpMethod.GET, entity,
-				CompanyCodeResponse.class);
-		CompanyCodeResponse companyCodeResponse = result.getBody();
-		return companyCodeResponse;
-	}
-
-	@Override
-	public ClientProfile invokeClientByCompanyCodeAPI(String companyCode) {
-		LOG.info("Request for company code ");
-		accessTokenRetryCount = 0;
-
-		String apiEndpointUrl = String.format(electraApiConfig.getBaseUrl(), electraApiConfig.getApiVersion(),
-				companyCode) + String.format(electraApiConfig.getClientApiEndpointUrl(), retrieveApiAccessToken());
-
-		LOG.info("api End point url  " + apiEndpointUrl);
-
-		if (httpHeaders == null) {
-			String plainCredentials = electraApiConfig.getClientId() + ":" + electraApiConfig.getClientSecret();
-			String base64ClientCredentials = new String(Base64Utils.encodeToString(plainCredentials.getBytes()));
-
-			httpHeaders = new HttpHeaders();
-			httpHeaders.add(AUTHORIZATION_HEADER, electraApiConfig.getHeaderAuthorization() + base64ClientCredentials);
-			// httpHeaders.set(ACCEPT_HEADER, electraApiConfig.getHeaderAccept());
-			httpHeaders.set(CONTENT_TYPE_HEADER, electraApiConfig.getHeaderContentType());
-			httpHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-		}
-
-		HttpEntity<String> entity = new HttpEntity<String>("parameters", httpHeaders);
-
-		ResponseEntity<ClientRegistrationResponse> result = restTemplate.exchange(apiEndpointUrl, HttpMethod.GET,
-				entity, ClientRegistrationResponse.class);
-		ClientRegistrationResponse clientResponse = result.getBody();
-		List<ClientProfile> profileList = clientResponse.getClients();
-
-		if (profileList != null && !profileList.isEmpty() && profileList.size() > 0) {
-			return profileList.get(0);
-		}
-		return null;
-	}
 	
 	
+	
+	
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#invokeTransferTokensAPIToClient(com.ireslab.sendx.electra.model.TokenTransferRequest)
+	 */
 	@Override
 	public String invokeTransferTokensAPIToClient(TokenTransferRequest tokenTransferRequest) {
 		String invokeTransferTokensAPIToClientUrl =String.format(electraApiConfig.getTransferTokensToClientApiEndpointUrl(),FORMAT_SPECIFIER);
@@ -868,42 +804,16 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 		
 		TokenTransferResponse tokenLifecycleManagementResponse = (TokenTransferResponse) invokeApi(
 				invokeTransferTokensAPIToClientUrl, HttpMethod.POST, TokenTransferResponse.class,
-				tokenTransferRequest, false, false,false);
+				tokenTransferRequest, false, false, false,false);
 		
 		return "";
 	}
 
-	@Override
-	public ClientSubscriptionResponse invokeSubscriptionPlanApi(ClientSubscriptionRequest clientSubscriptionRequest) {
-		String planOnboardingEndpointUrl = String.format(electraApiConfig.getSubscriptionPlanApiEndpointUrl(),
-				FORMAT_SPECIFIER);
-		
-		ClientSubscriptionResponse clientSubscriptionResponse = null;
-
-		try {
-			LOG.debug("Invoking Electra Subscription Plan Onboarding API with Request - "
-					+ objectWriter.writeValueAsString(clientSubscriptionRequest));
-		} catch (Exception exp) {
-			// do nothing
-		}
-
-		clientSubscriptionResponse = (ClientSubscriptionResponse) invokeApi(planOnboardingEndpointUrl, HttpMethod.POST,
-				ClientSubscriptionResponse.class, clientSubscriptionRequest, false, false,false);
-
-		// Account creation failed
-		if (clientSubscriptionResponse == null || clientSubscriptionResponse.getCode().intValue() != HttpStatus.OK.value()) {
-
-			if (clientSubscriptionResponse != null && CollectionUtils.isNotEmpty(clientSubscriptionResponse.getErrors())) {
-				List<Error> errors = clientSubscriptionResponse.getErrors();
-				LOG.error("Subscription plan on Electra failed | Error Code - " + clientSubscriptionResponse.getCode()
-						+ ", Error Message - " + clientSubscriptionResponse.getMessage() + ", Errors - " + errors);
-			}
-			return clientSubscriptionResponse;
-		}
-
-		return clientSubscriptionResponse;
-	}
 	
+	
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#isClientORNot(com.ireslab.sendx.electra.model.ClientSubscriptionRequest)
+	 */
 	@Override
 	public ClientSubscriptionResponse isClientORNot(ClientSubscriptionRequest clientSubscriptionRequest) {
 		String planOnboardingEndpointUrl = String.format(electraApiConfig.getIsClientApiEndpointUrl(),
@@ -919,7 +829,7 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 		}
 
 		clientSubscriptionResponse = (ClientSubscriptionResponse) invokeApi(planOnboardingEndpointUrl, HttpMethod.POST,
-				ClientSubscriptionResponse.class, clientSubscriptionRequest, false, false,false);
+				ClientSubscriptionResponse.class, clientSubscriptionRequest, false, false, false,false);
 
 		// Account creation failed
 		if (clientSubscriptionResponse == null || clientSubscriptionResponse.getCode().intValue() != HttpStatus.OK.value()) {
@@ -936,107 +846,14 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 	}
 
 
-	@Override
-	public ClientSubscriptionResponse invokeClientSubscriptionPlanList(
-			ClientSubscriptionRequest clientSubscriptionRequest) {
-		String planOnboardingEndpointUrl = String.format(electraApiConfig.getClientSubscriptionPlanApiEndpointUrl(),
-				FORMAT_SPECIFIER);
-		
-		ClientSubscriptionResponse clientSubscriptionResponse = null;
-
-		try {
-			LOG.debug("Invoking Electra Client Subscription Plan Onboarding API with Request - "
-					+ objectWriter.writeValueAsString(clientSubscriptionRequest));
-		} catch (Exception exp) {
-			// do nothing
-		}
-
-		clientSubscriptionResponse = (ClientSubscriptionResponse) invokeApi(planOnboardingEndpointUrl, HttpMethod.POST,
-				ClientSubscriptionResponse.class, clientSubscriptionRequest, false, false,false);
-
-		// Account creation failed
-		if (clientSubscriptionResponse == null || clientSubscriptionResponse.getCode().intValue() != HttpStatus.OK.value()) {
-
-			if (clientSubscriptionResponse != null && CollectionUtils.isNotEmpty(clientSubscriptionResponse.getErrors())) {
-				List<Error> errors = clientSubscriptionResponse.getErrors();
-				LOG.error("Subscription plan on Electra failed | Error Code - " + clientSubscriptionResponse.getCode()
-						+ ", Error Message - " + clientSubscriptionResponse.getMessage() + ", Errors - " + errors);
-			}
-		}
-			return clientSubscriptionResponse;
 	
-	}
 	
-	@Override
-	public SubscriptionPlanResponse invokeSubscriptionPlanListApi() {
-		LOG.info("Request for company code ");
-		accessTokenRetryCount = 0;
+	
+	
 
-		String apiEndpointUrl = String.format(electraApiConfig.getBaseUrl(), electraApiConfig.getApiVersion(), "")
-				+ String.format(electraApiConfig.getSubscriptionPlanListApiEndpointUrl(), retrieveApiAccessToken());
-
-		if (httpHeaders == null) {
-			String plainCredentials = electraApiConfig.getClientId() + ":" + electraApiConfig.getClientSecret();
-			String base64ClientCredentials = new String(Base64Utils.encodeToString(plainCredentials.getBytes()));
-
-			httpHeaders = new HttpHeaders();
-			httpHeaders.add(AUTHORIZATION_HEADER, electraApiConfig.getHeaderAuthorization() + base64ClientCredentials);
-			// httpHeaders.set(ACCEPT_HEADER, electraApiConfig.getHeaderAccept());
-			httpHeaders.set(CONTENT_TYPE_HEADER, electraApiConfig.getHeaderContentType());
-			httpHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-		}
-
-		HttpEntity<String> entity = new HttpEntity<String>("parameters", httpHeaders);
-
-		ResponseEntity<SubscriptionPlanResponse> result = restTemplate.exchange(apiEndpointUrl, HttpMethod.GET, entity,
-				SubscriptionPlanResponse.class);
-		SubscriptionPlanResponse subscriptionPlanResponse = result.getBody();
-		return subscriptionPlanResponse;
-	}
-
-	@Override
-	public ClientSubscriptionUpdateResponse updateClientSubscriptionPlan(ClientSubscriptionUpdateRequest clientSubscriptionUpdateRequest) {
-		accessTokenRetryCount = 0;
-
-		
-
-		String userOnboardingEndpointUrl = String.format(electraApiConfig.getClientSubscriptionPlanUpdationApiEndpointUrl(),
-				FORMAT_SPECIFIER);
-
-		try {
-			LOG.debug("Invoking Electra Client Subscription Plan Updation Onboarding API with Request - "
-					+ objectWriter.writeValueAsString(clientSubscriptionUpdateRequest));
-		} catch (Exception exp) {
-			// do nothing
-		}
-
-		ClientSubscriptionUpdateResponse clientSubscriptionUpdateResponse = (ClientSubscriptionUpdateResponse) invokeApi(
-				userOnboardingEndpointUrl, HttpMethod.POST, ClientSubscriptionUpdateResponse.class,
-				clientSubscriptionUpdateRequest, false, false,false);
-
-		// Client Subscription plan Updation failed
-		if (clientSubscriptionUpdateResponse == null
-				|| clientSubscriptionUpdateResponse.getCode().intValue() != HttpStatus.OK.value()) {
-
-			if (clientSubscriptionUpdateResponse != null && CollectionUtils.isNotEmpty(clientSubscriptionUpdateResponse.getErrors())) {
-				List<Error> errors = clientSubscriptionUpdateResponse.getErrors();
-				LOG.error("Client Subscription plan Updation on Electra failed | Error Code - " + clientSubscriptionUpdateResponse.getCode()
-						+ ", Error Message - " + clientSubscriptionUpdateResponse.getMessage() + ", Errors - " + errors);
-			}
-			// return userProfiles;
-		}
-
-		/*
-		 * java.lang.reflect.Type userProfileListType = new
-		 * TypeToken<List<com.ireslab.sendx.model.UserProfile>>() { }.getType();
-		 * 
-		 * userProfiles = modelMapper.map(userRegistrationResponse.getUsers(),
-		 * userProfileListType); return userProfiles;
-		 */
-
-		return clientSubscriptionUpdateResponse;
-	}
-
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#updateCheckmailRegistration(com.ireslab.sendx.electra.model.ClientSubscriptionUpdateRequest)
+	 */
 	@Override
 	public ClientSubscriptionUpdateResponse updateCheckmailRegistration(
 			ClientSubscriptionUpdateRequest clientSubscriptionUpdateRequest) {
@@ -1056,7 +873,7 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 
 		ClientSubscriptionUpdateResponse clientSubscriptionUpdateResponse = (ClientSubscriptionUpdateResponse) invokeApi(
 				userOnboardingEndpointUrl, HttpMethod.POST, ClientSubscriptionUpdateResponse.class,
-				clientSubscriptionUpdateRequest, false, false,false);
+				clientSubscriptionUpdateRequest, false, false, false,false);
 
 		// Client Subscription plan Updation failed
 		if (clientSubscriptionUpdateResponse == null
@@ -1070,83 +887,79 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 			// return userProfiles;
 		}
 
-		/*
-		 * java.lang.reflect.Type userProfileListType = new
-		 * TypeToken<List<com.ireslab.sendx.model.UserProfile>>() { }.getType();
-		 * 
-		 * userProfiles = modelMapper.map(userRegistrationResponse.getUsers(),
-		 * userProfileListType); return userProfiles;
-		 */
+		
 
 		return clientSubscriptionUpdateResponse;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#getProductList(java.lang.String, com.ireslab.sendx.electra.model.ProductRequest)
+	 */
 	@Override
 	public ProductResponse getProductList(String url,ProductRequest productRequest) {
 		
-		ProductResponse productResponse = invokeApi(url, HttpMethod.POST, ProductResponse.class, productRequest, false, false, true);
+		ProductResponse productResponse = invokeApi(url, HttpMethod.POST, ProductResponse.class, productRequest, false, false, false, true);
 	
 		return productResponse;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#makePayment(java.lang.String, com.ireslab.sendx.electra.model.PaymentRequest)
+	 */
 	@Override
 	public PaymentResponse makePayment(String makePaymentEndPointUrl, PaymentRequest paymentRequest) {
-		PaymentResponse paymentResponse = invokeApi(makePaymentEndPointUrl, HttpMethod.POST, PaymentResponse.class, paymentRequest, false, false, true);
+		PaymentResponse paymentResponse = invokeApi(makePaymentEndPointUrl, HttpMethod.POST, PaymentResponse.class, paymentRequest, false, false, false, true);
 		return paymentResponse;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#clientInformation(com.ireslab.sendx.electra.model.ClientInfoRequest)
+	 */
 	@Override
 	public ClientInfoResponse clientInformation(ClientInfoRequest clientInfoRequest) {
 		String clientInformationUrl = String.format(electraApiConfig.getClientInformationApiEndpointUrl(),
 				FORMAT_SPECIFIER);
-		ClientInfoResponse clientInfoResponse = invokeApi(clientInformationUrl, HttpMethod.POST, ClientInfoResponse.class, clientInfoRequest, false, false, true);
+		ClientInfoResponse clientInfoResponse = invokeApi(clientInformationUrl, HttpMethod.POST, ClientInfoResponse.class, clientInfoRequest, false, false, false, true);
 		return clientInfoResponse;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#savePurchasedProduct(com.ireslab.sendx.electra.model.PaymentRequest)
+	 */
 	@Override
 	public PaymentResponse savePurchasedProduct(PaymentRequest paymentRequest) {
 		String endpointUrl = String.format(electraApiConfig.getSavePurchasedProductApiEndpointUrl(),
 				FORMAT_SPECIFIER);
-		PaymentResponse paymentResponse = invokeApi(endpointUrl, HttpMethod.POST, PaymentResponse.class, paymentRequest, false, false, true);
+		PaymentResponse paymentResponse = invokeApi(endpointUrl, HttpMethod.POST, PaymentResponse.class, paymentRequest, false, false, false, true);
 		return paymentResponse;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#checkProductAvailability(com.ireslab.sendx.electra.model.ProductAvailabilityRequest)
+	 */
 	@Override
 	public ProductAvailabilityResponse checkProductAvailability(ProductAvailabilityRequest productAvailabilityRequest) {
 		String endpointUrl = String.format(electraApiConfig.getCheckProductAvailabilityApiEndpointUrl(),
 				FORMAT_SPECIFIER);
 		
-		ProductAvailabilityResponse productAvailabilityResponse = invokeApi(endpointUrl, HttpMethod.POST, ProductAvailabilityResponse.class, productAvailabilityRequest, false, false, true);
+		ProductAvailabilityResponse productAvailabilityResponse = invokeApi(endpointUrl, HttpMethod.POST, ProductAvailabilityResponse.class, productAvailabilityRequest, false, false, false, true);
 		return productAvailabilityResponse;
 		
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#getAllTransactionPurpose(java.lang.String)
+	 */
 	@Override
 	public TransactionPurposeResponse getAllTransactionPurpose(String clientCorrelationId) {
 		LOG.info("Request for transaction purpose, client correlation id -  "+clientCorrelationId);
 		accessTokenRetryCount = 0;
 
-		String apiEndpointUrl = String.format(electraApiConfig.getBaseUrl(), electraApiConfig.getApiVersion(),
-				clientCorrelationId ) + String.format(electraApiConfig.getAllTransactionPurposeApiEndpointUrl(), retrieveApiAccessToken());
+		String endpointUrl = String.format(electraApiConfig.getBaseUrl(), electraApiConfig.getApiVersion(),
+				clientCorrelationId ) + String.format(electraApiConfig.getAllTransactionPurposeApiEndpointUrl(), FORMAT_SPECIFIER);
 
-		LOG.info("api End point url  " + apiEndpointUrl);
-
-		if (httpHeaders == null) {
-			String plainCredentials = electraApiConfig.getClientId() + ":" + electraApiConfig.getClientSecret();
-			String base64ClientCredentials = new String(Base64Utils.encodeToString(plainCredentials.getBytes()));
-
-			httpHeaders = new HttpHeaders();
-			httpHeaders.add(AUTHORIZATION_HEADER, electraApiConfig.getHeaderAuthorization() + base64ClientCredentials);
-			// httpHeaders.set(ACCEPT_HEADER, electraApiConfig.getHeaderAccept());
-			httpHeaders.set(CONTENT_TYPE_HEADER, electraApiConfig.getHeaderContentType());
-			httpHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-		}
-
-		HttpEntity<String> entity = new HttpEntity<String>("parameters", httpHeaders);
-
-		ResponseEntity<TransactionPurposeResponse> result = restTemplate.exchange(apiEndpointUrl, HttpMethod.GET,
-				entity, TransactionPurposeResponse.class);
-		TransactionPurposeResponse transactionPurposeResponse = result.getBody();
+		
+		TransactionPurposeResponse transactionPurposeResponse = invokeApi(endpointUrl, HttpMethod.GET, TransactionPurposeResponse.class, null, true, false, false, false);
 		
 		return transactionPurposeResponse;
 	}
@@ -1165,54 +978,65 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 		String url = String.format(electraApiConfig.getAllowTransactionApiEndpointUrl(),
 				 FORMAT_SPECIFIER);
 		
-		TokenTransferResponse tokenTransferResponse = invokeApi(url, HttpMethod.POST, TokenTransferResponse.class, tokenTransferRequest, false, false, false);
+		TokenTransferResponse tokenTransferResponse = invokeApi(url, HttpMethod.POST, TokenTransferResponse.class, tokenTransferRequest, false, false, false, false);
 		
 		return tokenTransferResponse;
 	}
 
 	
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#invokeTransferFeeToMaster(com.ireslab.sendx.electra.model.TokenTransferRequest)
+	 */
 	@Override
 	public String invokeTransferFeeToMaster(TokenTransferRequest tokenTransferRequest) {
 		String invokeTransferTokensAPIToClientUrl = String
 				.format(electraApiConfig.getTransferFeeToMasterApiEndPointUrl(), FORMAT_SPECIFIER);
-		Account account = accountRepository.findByUserCorrelationId(tokenTransferRequest.getSenderCorrelationId());
+		
 
-		// System.out.println("TEsting...!!!"+invokeTransferTokensAPIToClientUrl);
 
 		TokenTransferResponse tokenLifecycleManagementResponse = (TokenTransferResponse) invokeApi(
-				invokeTransferTokensAPIToClientUrl, HttpMethod.POST, TokenTransferResponse.class, tokenTransferRequest,
+				invokeTransferTokensAPIToClientUrl, HttpMethod.POST, TokenTransferResponse.class, tokenTransferRequest, false,
 				false, false, false);
 
 		return "";
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#getTransactionLimit()
+	 */
 	@Override
 	public TransactionLimitResponse getTransactionLimit() {
 		String url = String.format(electraApiConfig.getTransactionLimitApiEndpointUrl(),
 				 FORMAT_SPECIFIER);
 		
 		TransactionLimitResponse transactionLimitResponse = invokeApi(url, HttpMethod.GET, TransactionLimitResponse.class,
-				null, false, true, false);
+				null, false, false, true, false);
 		return transactionLimitResponse;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#updateDeviceSpecificParameter(com.ireslab.sendx.electra.model.SendxElectraRequest)
+	 */
 	@Override
 	public SendxElectraResponse updateDeviceSpecificParameter(SendxElectraRequest sendxElectraRequest) {
 		String url = String.format(electraApiConfig.getUpdateDeviceSpecificParameterApiEndpointUrl(),
 				 FORMAT_SPECIFIER);
 		
 		SendxElectraResponse sendxElectraResponse = invokeApi(url, HttpMethod.POST, SendxElectraResponse.class,
-				sendxElectraRequest, false, false, true);
+				sendxElectraRequest, false, false, false, true);
 		return sendxElectraResponse;
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#searchUserProfileByUniqueCode(java.lang.String)
+	 */
 	@Override
 	public com.ireslab.sendx.model.UserProfile searchUserProfileByUniqueCode(String uniqueCode) {
 		UserProfileResponse userProfileResponse =null;
 		String searchUserProfileApiEndpointUrl = String.format(electraApiConfig.getSearchUserProfileApiEndpointUrl(),uniqueCode,
 				FORMAT_SPECIFIER);
 		userProfileResponse = invokeApi(searchUserProfileApiEndpointUrl, HttpMethod.GET, UserProfileResponse.class,
-				null, false, false, true);
+				null, false, false, false, true);
 		
 		//System.out.println(searchUserProfileApiEndpointUrl);
 		if(userProfileResponse==null) {
@@ -1238,64 +1062,85 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 		return userProfileModel;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#deleteNotificationData(com.ireslab.sendx.electra.model.NotificationRequest)
+	 */
 	@Override
 	public NotificationResponse deleteNotificationData(NotificationRequest notificationRequest) {
 		String saveNotificationApiEndpointUrl = String.format(electraApiConfig.getDeleteNotificationApiEndpointUrl(),
 				FORMAT_SPECIFIER);
 		
 		NotificationResponse notificationResponse = invokeApi(saveNotificationApiEndpointUrl, HttpMethod.POST, NotificationResponse.class,
-				notificationRequest, false, true, false);
+				notificationRequest, false, false, true, false);
 		return notificationResponse;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#makeOfflinePayment(com.ireslab.sendx.electra.model.TokenTransferRequest)
+	 */
 	@Override
 	public PaymentResponse makeOfflinePayment(TokenTransferRequest tokenTransferRequest) {
 		String offlinePaymentEndPointUrl = String.format(electraApiConfig.getOfflinePaymentApiEndpointUrl(),
 				FORMAT_SPECIFIER);
 		PaymentResponse paymentResponse = invokeApi(offlinePaymentEndPointUrl, HttpMethod.POST, PaymentResponse.class,
-				tokenTransferRequest, false, false, true);
+				tokenTransferRequest, false, false, false, true);
 		return paymentResponse;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#saveNotificationData(com.ireslab.sendx.electra.model.NotificationRequest)
+	 */
 	@Override
 	public NotificationResponse saveNotificationData(NotificationRequest notificationRequest) {
 		String saveNotificationApiEndpointUrl = String.format(electraApiConfig.getSaveNotificationApiEndpointUrl(),
 				FORMAT_SPECIFIER);
 		
 		NotificationResponse notificationResponse = invokeApi(saveNotificationApiEndpointUrl, HttpMethod.POST, NotificationResponse.class,
-				notificationRequest, false, true, false);
+				notificationRequest, false, false, true, false);
 		return notificationResponse;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#getExchangeRate(com.ireslab.sendx.electra.model.ExchangeRequest)
+	 */
 	@Override
 	public ExchangeResponse getExchangeRate(ExchangeRequest exchangeRequest) {
 		String exchangeRateEndPointUrl = String.format(electraApiConfig.getExchangeRateApiEndpointUrl(),
 				FORMAT_SPECIFIER);
 		ExchangeResponse exchangeResponse = invokeApi(exchangeRateEndPointUrl, HttpMethod.POST, ExchangeResponse.class,
-				exchangeRequest, false, false, true);
+				exchangeRequest, false, false, false, true);
 		return exchangeResponse;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#getAllNotification(java.lang.String)
+	 */
 	@Override
 	public SendxElectraResponse getAllNotification(String correlationId) {
 		String updateNotificationApiEndpointUrl = String.format(electraApiConfig.getAllNotificationApiEndpointUrl(),correlationId,
 				FORMAT_SPECIFIER);
 		
 		SendxElectraResponse notificationResponse = invokeApi(updateNotificationApiEndpointUrl, HttpMethod.GET, SendxElectraResponse.class,
-				null, false, true, false);
+				null, false, false, true, false);
 		return notificationResponse;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#updateNotificationApi(com.ireslab.sendx.electra.model.SendxElectraRequest)
+	 */
 	@Override
 	public SendxElectraResponse updateNotificationApi(SendxElectraRequest sendxElectraRequest) {
 		String updateNotificationApiEndpointUrl = String.format(electraApiConfig.getUpdateNotificationApiEndpointUrl(),
 				FORMAT_SPECIFIER);
 		
 			SendxElectraResponse notificationResponse = invokeApi(updateNotificationApiEndpointUrl, HttpMethod.POST, SendxElectraResponse.class,
-				sendxElectraRequest, false, true, false);
+				sendxElectraRequest, false, false, true, false);
 			return notificationResponse;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#searchUserProfileByDialCodeAndMobile(java.lang.String, java.lang.Long)
+	 */
 	@Override
 	public com.ireslab.sendx.model.UserProfile searchUserProfileByDialCodeAndMobile(String beneficiaryCountryDialCode,
 			Long beneficiaryMobileNumber) {
@@ -1303,16 +1148,13 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 		String searchUserProfileApiEndpointUrl = String.format(electraApiConfig.getSearchUserProfileByMobileApiEndpointUrl(),beneficiaryCountryDialCode,beneficiaryMobileNumber,
 				FORMAT_SPECIFIER);
 		userProfileResponse = invokeApi(searchUserProfileApiEndpointUrl, HttpMethod.GET, UserProfileResponse.class,
-				null, false, false, true);
+				null, false, false, false, true);
 		
-		//System.out.println(searchUserProfileApiEndpointUrl);
+		
 		com.ireslab.sendx.model.UserProfile userProfileModel = null;
 		if(userProfileResponse!=null) {
 			
-			//This has been change to solve terminated user.
-			/*if(userProfileResponse!=null) {
-			throw new com.ireslab.sendx.exception.BusinessException(HttpStatus.OK, AppStatusCodes.INVALID_REQUEST, com.ireslab.sendx.util.PropConstants.INVALID_REQUEST);
-			}*/
+			
 		
 		UserProfile userProfile = userProfileResponse.getUserProfile();
 		userProfileModel =new com.ireslab.sendx.model.UserProfile();
@@ -1337,30 +1179,36 @@ public class TransactionalApiServiceImpl implements TransactionalApiService {
 		return userProfileModel;
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#getAllTransactionalDetails(com.ireslab.sendx.electra.model.SendxElectraRequest)
+	 */
 	@Override
 	public SendxElectraResponse getAllTransactionalDetails(SendxElectraRequest sendxElectraRequest) {
 
 		String exchangeEndPointUrl = String.format(electraApiConfig.getTransactionalDetailsApiEndpointUrl(),
 				sendxElectraRequest.getUserCorrelationId(), FORMAT_SPECIFIER);
         
-		LOG.debug("Endpoint url for get all transaction details  :"+exchangeEndPointUrl);
+		LOG.info("Endpoint url for get all transaction details  :"+exchangeEndPointUrl);
 
 		SendxElectraResponse sendxElectraResponse =(SendxElectraResponse) invokeApi(exchangeEndPointUrl, HttpMethod.POST,
-				SendxElectraResponse.class, sendxElectraRequest, false, false,false);
+				SendxElectraResponse.class, sendxElectraRequest, false, false, false,false);
 
-		LOG.debug("Transaction list size getted from electra  :"+sendxElectraResponse.getTransactionDetailsDtos().size());
+		
 		return sendxElectraResponse;
 	}
 	
 	
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.TransactionalApiService#getAllSettlementReports(java.lang.String)
+	 */
 	@Override
 	public SendxElectraResponse getAllSettlementReports(String correllationId) {
 		
-		//Account account = accountRepository.findByUserCorrelationId(correllationId);
+		
 		String apiEndpointUrl = String.format(electraApiConfig.getSettlementReportListApiEndpointUrl(),correllationId,
 				FORMAT_SPECIFIER);
 		SendxElectraResponse sendxElectraResponse = invokeApi(apiEndpointUrl, HttpMethod.GET, SendxElectraResponse.class,
-				null, false, false, true);
+				null, false, false, false, true);
 		
 		return sendxElectraResponse;
 	}

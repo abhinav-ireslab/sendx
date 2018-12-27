@@ -15,6 +15,10 @@ import com.ireslab.sendx.model.SendTokensRequest;
 import com.ireslab.sendx.repository.ScheduledTransactionRepository;
 import com.ireslab.sendx.service.TransactionService;
 
+/**
+ * @author iRESlab
+ *
+ */
 @Component
 public class ScheduledTransactionExecutor {
 
@@ -26,14 +30,18 @@ public class ScheduledTransactionExecutor {
 	@Autowired
 	private TransactionService txnService;
 
+	
 	/**
+	 * use to perform schedule transaction.
+	 * 
 	 * @param mobileNumber
 	 * @param countryDialCode
+	 * @param clientCorrelationId
 	 */
 	@Async
 	public void executeScheduledTransactions(Long mobileNumber, String countryDialCode, String clientCorrelationId) {
 
-		LOG.debug("Executing scheduled transactions for user, mobile no - "+mobileNumber+ "\n country dial code - "+countryDialCode+"\n client correlationId - "+clientCorrelationId);
+		LOG.info("Executing scheduled transactions for user, mobile no - "+mobileNumber+ "\n country dial code - "+countryDialCode+"\n client correlationId - "+clientCorrelationId);
 
 		List<ScheduledTransaction> scheduledTransactions = scheduledTxnRepo
 				.findByBeneficiaryMobileNumberAndBeneficiaryCountry_CountryDialCode(BigInteger.valueOf(mobileNumber),
@@ -54,7 +62,7 @@ public class ScheduledTransactionExecutor {
 					sendTokensRequest.setNoOfTokens(scheduledTransaction.getNoOfTokens());
 					sendTokensRequest.setClientCorrelationId(clientCorrelationId);
 
-					//TODO: Invoke Electra API for token transfer
+					
 					
 					txnService.handleTokensTransfer(sendTokensRequest);
 					scheduledTxnRepo.delete(scheduledTransaction);

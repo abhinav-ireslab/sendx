@@ -113,18 +113,5 @@ public class PhoneNumberValidationUtils {
 		return mobileNumber;
 	}
 
-	public static void main(String[] args) {
-
-		String region = PhoneNumberUtil.getInstance()
-				.getRegionCodeForCountryCode(Integer.parseInt("+91".replaceAll("[+]", "")));
-		System.out.println("Region - " + region);
-
-		/*String arr[] = validateMobNoWithCountryAbbv("92353702",
-				PhoneNumberUtil.getInstance().getRegionCodeForCountryCode(91));
-		System.out.println(arr[0] + " - " + arr[1]);*/
-		
-		String arr[] = validateMobNoWithCountryAbbv("9015293893",
-				PhoneNumberUtil.getInstance().getRegionCodeForCountryCode(91));
-		System.out.println(arr[0] + " - " + arr[1]);
-	}
+	
 }

@@ -39,6 +39,10 @@ public interface PropConstants {
 
 	public static final String ACCOUNT_TERMINATED = "user.account.terminated";
 	
+	public static final String USER_SUSPENDED = "user.suspended";
+	
+	public static final String LOAD_TOKEN_FAILED = "load.token.failed";
+	
 	//public static final String TRANSACTION_LIMIT_REACHED = "transaction.limit.reached";
 
 	// public static final String AGENT_SUCCESS = "account.exists";

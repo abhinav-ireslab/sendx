@@ -27,7 +27,7 @@ public class TestServiceImpl {
 		//System.out.println("exchangeEndPointUrl :"+exchangeEndPointUrl);
 
 		SendxElectraResponse sendxElectraResponse =(SendxElectraResponse) transactionalApiServiceImpl.invokeApi(exchangeEndPointUrl, HttpMethod.POST,
-				SendxElectraResponse.class, sendxElectraRequest, false, false,false);
+				SendxElectraResponse.class, sendxElectraRequest, false, false, false,false);
 
 		//System.out.println(sendxElectraResponse.getTransactionDetailsDtos().size());
 		return sendxElectraResponse;

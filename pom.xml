@@ -6,7 +6,7 @@
 	<groupId>com.ireslab</groupId>
 	<artifactId>sendx</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
+	<packaging>war</packaging>
 
 	<name>sendx</name>
 	<description>SendX Server Component</description>
@@ -70,36 +70,19 @@
 
 		<!-- mvn install:install-file -Dfile=stellar-sdk.jar -DgroupId=com.stellar.sdk 
 			-DartifactId=stellar-sdk -Dversion=0.1.9 -Dpackaging=jar -->
-		
 		<dependency>
-		<groupId>com.stellar.sdk</groupId>
-		<artifactId>stellar-sdk</artifactId>
-		<version>0.1.9</version>
-		<scope>system</scope>
-		<systemPath>${project.basedir}/lib/stellar-sdk.jar</systemPath>
-		</dependency>
-		
-		<!--<dependency>
 			<groupId>com.stellar.sdk</groupId>
 			<artifactId>stellar-sdk</artifactId>
 			<version>0.1.9</version>
-		</dependency> -->
+		</dependency>
 		
 		<!-- mvn install:install-file -Dfile=sendx-common-lib-1.1.jar -DgroupId=com.ireslab -Dversion=1.1 -DartifactId=sendx-common-lib  -Dpackaging=jar -->
 		
-		<dependency>
-		<groupId>com.ireslab</groupId>
-	    <artifactId>sendx-common-lib</artifactId>
-	    <version>1.1</version>
-		<scope>system</scope>
-		<systemPath>${project.basedir}/lib/sendx-common-lib-1.1.jar</systemPath>
-		</dependency>
-		
-		<!--<dependency>
+		 <dependency>
 			<groupId>com.ireslab</groupId>
 	        <artifactId>sendx-common-lib</artifactId>
 	        <version>1.1</version>
-		</dependency>-->
+		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.modelmapper/modelmapper -->
 		<dependency>

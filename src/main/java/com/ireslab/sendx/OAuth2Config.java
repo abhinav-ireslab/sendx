@@ -26,7 +26,7 @@ import com.ireslab.sendx.service.impl.ClientDetailsServiceImpl;
 import com.ireslab.sendx.springsecurity.CredentialsAuthenticationManager;
 
 /**
- * @author Nitin
+ * @author iRESlab
  *
  */
 @Configuration

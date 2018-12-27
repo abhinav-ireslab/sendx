@@ -38,18 +38,34 @@ public class AgentController {
 
 	private static final Logger LOG = LoggerFactory.getLogger(AgentController.class);
 
+	/**
+	 * This function use to register user as a agent.
+	 * 
+	 * @param agentRequest
+	 * @param request
+	 * @return
+	 * @throws JsonProcessingException
+	 */
 	@RequestMapping(value = "/agentRegister", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	public AgentResponse agentRegister(@RequestBody AgentRequest agentRequest, HttpServletRequest request)
 			throws JsonProcessingException {
 
-		LOG.debug("Request received from Agent Registration - " + agentRequest.toString());
+		LOG.info("Request received from Agent Registration - " + agentRequest.toString());
 
 		AgentResponse agentResponse = agentService.registerAgent(agentRequest);
-		LOG.debug("Register agent response sent - " + objectWriter.writeValueAsString(agentResponse));
+		LOG.info("Register agent response sent - " + objectWriter.writeValueAsString(agentResponse));
 
 		return agentResponse;
 	}
 
+	/**
+	 * This function use to get all agents list.
+	 * 
+	 * @param agentRequestBody
+	 * @param request
+	 * @return
+	 * @throws JsonProcessingException
+	 */
 	@RequestMapping(value = "/getAgent", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public AgentResponse getAgent(@RequestBody AgentRequestBody agentRequestBody, HttpServletRequest request)
 			throws JsonProcessingException {
@@ -60,7 +76,7 @@ public class AgentController {
 		String countryDialCode = agentRequestBody.getCountryDialCode();
 
 		AgentResponse agentResponse = null;
-		LOG.debug("Get agent request received - \n\t mobileNumber : " + mobileNumber + ",\n\t countryCode : "
+		LOG.info("Get agent request received - \n\t mobileNumber : " + mobileNumber + ",\n\t countryCode : "
 				+ countryDialCode);
 
 		if (mobileNumber == null || countryDialCode == null) {
@@ -69,7 +85,7 @@ public class AgentController {
 		}
 
 		agentResponse = agentService.getAgent(agentRequestBody);
-		LOG.debug("Get agent response sent - " + objectWriter.writeValueAsString(agentResponse));
+		LOG.info("Get agent response sent " );
 
 		return agentResponse;
 	}

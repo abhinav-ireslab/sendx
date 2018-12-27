@@ -11,19 +11,17 @@ import org.springframework.security.oauth2.provider.client.BaseClientDetails;
 import org.springframework.stereotype.Service;
 
 import com.ireslab.sendx.entity.ClientCredential;
-import com.ireslab.sendx.notification.SendxConfig;
 import com.ireslab.sendx.repository.ClientCredentialRepository;
 
 /**
- * @author Nitin
+ * @author iRESlab
  *
  */
 @Primary
 @Service(value = "clientDetailsService")
 public class ClientDetailsServiceImpl implements ClientDetailsService {
 
-	@Autowired
-	private SendxConfig sendxConfig;
+	
 	
 	public static final Logger LOG = LoggerFactory.getLogger(ClientDetailsServiceImpl.class);
 

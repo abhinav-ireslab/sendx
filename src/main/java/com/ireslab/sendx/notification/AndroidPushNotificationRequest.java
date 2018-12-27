@@ -6,6 +6,7 @@ public class AndroidPushNotificationRequest {
 	
 	private String topic; 
 	private JSONObject body;
+	private String firebaseServiceKey;
 	
 	public String getTopic() {
 		return topic;
@@ -18,6 +19,12 @@ public class AndroidPushNotificationRequest {
 	}
 	public void setBody(JSONObject body) {
 		this.body = body;
+	}
+	public String getFirebaseServiceKey() {
+		return firebaseServiceKey;
+	}
+	public void setFirebaseServiceKey(String firebaseServiceKey) {
+		this.firebaseServiceKey = firebaseServiceKey;
 	}
 	
 	

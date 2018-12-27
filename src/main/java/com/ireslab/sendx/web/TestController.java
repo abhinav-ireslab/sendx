@@ -103,7 +103,7 @@ private final String TOPIC = "f78d420a9cc2c449";
 
 		HttpEntity<String> request = new HttpEntity<>(body.toString());
 
-		CompletableFuture<String> pushNotification = androidPushNotificationsService.send(request);
+		CompletableFuture<String> pushNotification = androidPushNotificationsService.send(request,"safsd");
 		CompletableFuture.allOf(pushNotification).join();
 
 		try {

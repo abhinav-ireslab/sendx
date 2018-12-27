@@ -26,6 +26,9 @@ public class ProfileImageServiceImpl implements ProfileImageService {
 	@Autowired
 	private SendxConfig sendexConfig;
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.ProfileImageService#saveProfileImage(com.ireslab.sendx.model.UserProfile, javax.servlet.http.HttpServletRequest)
+	 */
 	@Override
 	public UserProfile saveProfileImage(UserProfile userProfile, HttpServletRequest request) {
 
@@ -33,26 +36,17 @@ public class ProfileImageServiceImpl implements ProfileImageService {
 
 		String time = "" + date.getTime();
 
-		// TODO save profile image to images folder of webapp/images.
+		
 
 		String imageValueInBase64String = userProfile.getProfileImageValue();
-		// LOG.info("The image string isBase64
-		// :"+Base64.isBase64(imageValueInBase64String));
-		// String image
-		// ="profile-"+userProfile.getMobileNumber()+"-"+date.getTime()+".jpg";
+		
 
 		if (imageValueInBase64String != null) {
 
 			// This will decode the String which is encoded by using Base64 class
 			String formatName = "profile-" + userProfile.getMobileNumber() + "-" + time + ".jpg";
 			byte[] imageByte = Base64.decodeBase64(imageValueInBase64String);
-			/*
-			 * String directory = request.getServletContext().getRealPath("/") +
-			 * "images/profile-" + userProfile.getMobileNumber()+"-"+time+ ".jpg";
-			 */
-
-			// String directory = request.getServletContext().getRealPath("/") +
-			// "images/"+formateName;
+			
 
 			String catalinaHome = System.getenv("CATALINA_HOME");
 			catalinaHome = (catalinaHome == null) ? System.getProperty("catalina.home") : catalinaHome;
@@ -75,13 +69,7 @@ public class ProfileImageServiceImpl implements ProfileImageService {
 				String imageUrl = sendexConfig.appBaseUrl + URI_SEPARATOR + sendexConfig.imageDirectoryRelativePath
 						+ URI_SEPARATOR + formatName;
 
-				/*
-				 * userProfile.setProfileImageUrl(sendexConfig.appBaseUrl+
-				 * String.format(sendexConfig.userProfileImageUrl, "profile-" +
-				 * userProfile.getMobileNumber()));
-				 */
-				// userProfile.setProfileImageUrl(sendexConfig.appBaseUrl+
-				// String.format(sendexConfig.userProfileImageUrl,formateName));
+				
 				userProfile.setProfileImageUrl(imageUrl);
 			} catch (IOException e) {
 				LOG.info("error occured while writting image to directory :" + directory);
@@ -102,24 +90,11 @@ public class ProfileImageServiceImpl implements ProfileImageService {
 		return userProfile;
 	}
 
-	/*
-	 * @Override public byte[] getImageDataAsInputStream(String mobileNumber,
-	 * HttpServletRequest request) {
-	 * 
-	 * InputStream is = request.getServletContext().getResourceAsStream("/images/" +
-	 * mobileNumber + ".jpg");
-	 * 
-	 * // System.out.println("testing image name :"+mobileNumber); InputStream is =
-	 * request.getServletContext().getResourceAsStream("/images/" + mobileNumber);
-	 * if (is != null) {
-	 * 
-	 * try { return IOUtils.toByteArray(is); } catch (IOException e) {
-	 * 
-	 * e.printStackTrace(); }
-	 * 
-	 * } return null; }
-	 */
+	
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.ProfileImageService#saveImage(java.lang.String, java.lang.String, java.lang.String)
+	 */
 	@Override
 	public String saveImage(String imageName, String mobileNumber, String imageBase64) {
 

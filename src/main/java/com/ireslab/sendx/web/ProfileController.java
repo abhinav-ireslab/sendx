@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.ireslab.sendx.exception.BusinessException;
 import com.ireslab.sendx.model.GenericResponse;
 import com.ireslab.sendx.model.UserProfile;
@@ -26,7 +25,7 @@ import com.ireslab.sendx.util.AppStatusCodes;
 import com.ireslab.sendx.util.PropConstants;
 
 /**
- * @author Nitin
+ * @author iRESlab
  *
  */
 @RestController
@@ -37,17 +36,18 @@ public class ProfileController {
 	@Autowired
 	private ProfileService profileService;
 
-	@Autowired
-	private ObjectWriter objectWriter;
+	
 
 	/**
+	 * use to update profile of users.
+	 * 
 	 * @param userProfile
 	 * @return
 	 */
 	@RequestMapping(value = "/updateProfile", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public UserProfile updateProfile(@RequestBody UserProfile userProfile, HttpServletRequest request) {
 
-		LOG.debug("Request received for profile updation - " + userProfile.toString());
+		LOG.info("Request received for profile updation - " + userProfile.toString());
 
 		// Getting username details from Spring Security Context
 		String[] usernameToken = SpringSecurityUtil.usernameFromSecurityContext();
@@ -61,6 +61,8 @@ public class ProfileController {
 	}
 
 	/**
+	 * use to get profile of users.
+	 * 
 	 * @param mobileNumber
 	 * @param countryCode
 	 * @return
@@ -75,7 +77,7 @@ public class ProfileController {
 		String countryDialCode = usernameToken[0];
 
 		UserProfile userProfile = null;
-		LOG.debug("Get user profile request received - \n\t mobileNumber : " + mobileNumber + ",\n\t countryCode : "
+		LOG.info("Get user profile request received - \n\t mobileNumber : " + mobileNumber + ",\n\t countryCode : "
 				+ countryDialCode);
 
 		if (mobileNumber == null || countryDialCode == null) {
@@ -84,12 +86,14 @@ public class ProfileController {
 		}
 
 		userProfile = profileService.getUserProfile(mobileNumber, countryDialCode);
-		LOG.debug("Get user profile response sent - " + objectWriter.writeValueAsString(userProfile));
+		LOG.info("Get user profile response sent  ");
 
 		return userProfile;
 	}
 
 	/**
+	 * use to get profile by unique code.
+	 * 
 	 * @return
 	 * @throws JsonProcessingException
 	 */
@@ -98,14 +102,16 @@ public class ProfileController {
 			throws JsonProcessingException {
 
 		UserProfile userProfile = null;
-		LOG.debug("Get user profile request received for unique code - " + uniqueCode);
+		LOG.info("Get user profile request received for unique code - " + uniqueCode);
 
 		userProfile = profileService.getUserProfileByUniqueCode(uniqueCode);
-		LOG.debug("Get user profile response sent - " + objectWriter.writeValueAsString(userProfile));
+		LOG.info("Get user profile response sent ");
 		return userProfile;
 	}
 
 	/**
+	 * use to update password of users.
+	 * 
 	 * @param userProfile
 	 * @return
 	 * @throws JsonProcessingException
@@ -115,14 +121,16 @@ public class ProfileController {
 
 		GenericResponse genericResponse = null;
 		String mobileNumber = userProfile.getCountryDialCode() + userProfile.getMobileNumber();
-		LOG.debug("Password update request received for Mobile Number - " + mobileNumber);
+		LOG.info("Password update request received for Mobile Number - " + mobileNumber);
 
 		genericResponse = profileService.updatePasswordOrMpin(userProfile);
-		LOG.debug("Password successfully updated for Mobile Number - " + mobileNumber);
+		LOG.info("Password successfully updated for Mobile Number - " + mobileNumber);
 		return genericResponse;
 	}
 
 	/**
+	 * use to update mpin of users.
+	 * 
 	 * @param userProfile
 	 * @return
 	 * @throws JsonProcessingException
@@ -132,18 +140,12 @@ public class ProfileController {
 
 		GenericResponse genericResponse = null;
 		String mobileNumber = userProfile.getCountryDialCode() + userProfile.getMobileNumber();
-		LOG.debug("mPIN update request received for Mobile Number - " + mobileNumber);
+		LOG.info("mPIN update request received for Mobile Number - " + mobileNumber);
 
 		genericResponse = profileService.updatePasswordOrMpin(userProfile);
-		LOG.debug("mPIN successfully updated for Mobile Number - " + mobileNumber);
+		LOG.info("mPIN successfully updated for Mobile Number - " + mobileNumber);
 		return genericResponse;
 	}
 
-	// @GetMapping(value = "/getProfileImage", produces =
-	// MediaType.IMAGE_JPEG_VALUE)
-	// public @ResponseBody byte[] getImageWithMediaType(HttpServletRequest request,
-	// @RequestParam("imageName") String imageName) throws IOException {
-	// LOG.debug("Request recived to fetching image[" + imageName + "]");
-	// return profileImageService.getImageDataAsInputStream(imageName);
-	// }
+	
 }

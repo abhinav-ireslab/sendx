@@ -23,6 +23,10 @@ import com.ireslab.sendx.service.TransactionalApiService;
 import com.ireslab.sendx.util.AppStatusCodes;
 import com.ireslab.sendx.util.PropConstants;
 
+/**
+ * @author iRESlab
+ *
+ */
 @Service
 public class AgentServiceImpl implements AgentService {
 
@@ -38,6 +42,9 @@ public class AgentServiceImpl implements AgentService {
 	@Autowired
 	private TransactionalApiService transactionalApiService;
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.AgentService#registerAgent(com.ireslab.sendx.model.AgentRequest)
+	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public AgentResponse registerAgent(AgentRequest agentRequest) {
@@ -89,6 +96,9 @@ public class AgentServiceImpl implements AgentService {
 
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.AgentService#getAgent(com.ireslab.sendx.model.AgentRequestBody)
+	 */
 	@Override
 	public AgentResponse getAgent(AgentRequestBody agentRequestBody) {
 

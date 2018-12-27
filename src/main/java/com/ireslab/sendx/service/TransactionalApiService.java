@@ -100,22 +100,10 @@ public interface TransactionalApiService {
 
 	public void invokeUserClientEntryOnboardingApi(SignupRequest signupRequest);
 
-	public CompanyCodeResponse invokeCompanyCodeAPI();
-
-	public ClientProfile invokeClientByCompanyCodeAPI(String companyCode);
-
 	public String invokeTransferTokensAPIToClient(TokenTransferRequest tokenTransferRequest);
 
 	public UserRegistrationResponse updateUser(UserProfile userProfile, String correlationId);
 
-	public ClientSubscriptionResponse invokeSubscriptionPlanApi(ClientSubscriptionRequest clientSubscriptionRequest);
-
-	public SubscriptionPlanResponse invokeSubscriptionPlanListApi();
-
-	public ClientSubscriptionUpdateResponse updateClientSubscriptionPlan(ClientSubscriptionUpdateRequest clientSubscriptionUpdateRequest);
-
-	public ClientSubscriptionResponse invokeClientSubscriptionPlanList(
-			ClientSubscriptionRequest clientSubscriptionRequest);
 
 	public ClientSubscriptionResponse isClientORNot(ClientSubscriptionRequest clientSubscriptionRequest);
 

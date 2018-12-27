@@ -21,13 +21,12 @@ import com.ireslab.sendx.model.ActivationCodeRequest;
 import com.ireslab.sendx.model.ActivationCodeResponse;
 import com.ireslab.sendx.model.SignupRequest;
 import com.ireslab.sendx.model.SignupResponse;
-import com.ireslab.sendx.notification.SendxConfig;
 import com.ireslab.sendx.service.SignupService;
 import com.ireslab.sendx.util.AppStatusCodes;
 import com.ireslab.sendx.util.PropConstants;
 
 /**
- * @author Nitin
+ * @author iRESlab
  *
  */
 @RestController
@@ -42,6 +41,8 @@ public class SignUpController extends BaseController {
 	private SignupService signupService;
 
 	/**
+	 * use to check mobile number registered or not.
+	 * 
 	 * @param mobileNumber
 	 * @param countryDialCode
 	 * @return
@@ -54,7 +55,7 @@ public class SignUpController extends BaseController {
 			throws JsonProcessingException {
 
 		AccountVerificationResponse accVerificationResponse = null;
-		LOG.debug("Account verification request received - \n\t mobileNumber : " + mobileNumber + ",\n\t countryCode : "
+		LOG.info("Account verification request received - \n\t mobileNumber : " + mobileNumber + ",\n\t countryCode : "
 				+ countryDialCode);
 
 		if (mobileNumber == null || countryDialCode == null) {
@@ -63,12 +64,14 @@ public class SignUpController extends BaseController {
 		}
 
 		accVerificationResponse = signupService.verifyAccount(mobileNumber, countryDialCode);
-		LOG.debug("Account verification response sent - " + objectWriter.writeValueAsString(accVerificationResponse));
+		LOG.info("Account verification response sent - " + objectWriter.writeValueAsString(accVerificationResponse));
 
 		return accVerificationResponse;
 	}
 
 	/**
+	 * use to send activation code SMS.
+	 * 
 	 * @param mobileNumber
 	 * @param countryDialCode
 	 * @return
@@ -81,16 +84,18 @@ public class SignUpController extends BaseController {
 			@RequestParam(value = "requestType", required = false) String requestType) throws JsonProcessingException {
 
 		ActivationCodeResponse activationCodeResponse = null;
-		LOG.debug("Request Activation code request received - \n\t mobileNumber : " + mobileNumber
+		LOG.info("Request Activation code request received - \n\t mobileNumber : " + mobileNumber
 				+ ",\n\t countryCode : " + countryDialCode);
 
 		activationCodeResponse = signupService.requestActivationCode(mobileNumber, countryDialCode, requestType);
-		LOG.debug("Request Activation code response sent - " + objectWriter.writeValueAsString(activationCodeResponse));
+		LOG.info("Activation code response sent - " + objectWriter.writeValueAsString(activationCodeResponse));
 
 		return activationCodeResponse;
 	}
 
 	/**
+	 * use to validate activation code with mobile number.
+	 * 
 	 * @param activationCodeRequest
 	 * @return
 	 * @throws JsonProcessingException
@@ -100,17 +105,19 @@ public class SignUpController extends BaseController {
 			throws JsonProcessingException {
 
 		ActivationCodeResponse activationCodeResponse = null;
-		LOG.debug("Validate Activation code request received - "
+		LOG.info("Validate Activation code request received - "
 				+ objectWriter.writeValueAsString(activationCodeRequest));
 
 		activationCodeResponse = signupService.validateActivationCode(activationCodeRequest);
-		LOG.debug(
+		LOG.info(
 				"Validate Activation code response sent - " + objectWriter.writeValueAsString(activationCodeResponse));
 
 		return activationCodeResponse;
 	}
 
 	/**
+	 * use to register user's account.
+	 * 
 	 * @param signupRequest
 	 * @return
 	 * @throws JsonProcessingException
@@ -131,26 +138,7 @@ public class SignUpController extends BaseController {
 		return signupResponse;
 	}
 
-	@Autowired
-	private SendxConfig sendxConfig;
-
-	/**
-	 * @return
-	 * @throws Exception
-	 */
-	@RequestMapping(value = "/test", method = RequestMethod.GET)
-	public String test() throws Exception {
-
-		LOG.debug("SendxController.test() - SendX Application Started" + sendxConfig);
-
-		/* smsSender.sendMessage("919711355293", "Hello"); */
-		return "SendX Application Started";
-	}
-
-	@RequestMapping(value = "/test-signup", method = RequestMethod.GET)
-	public SignupResponse testSignup(@RequestBody SignupRequest signupRequest) throws Exception {
-
-		return null;
-	}
+	
+	
 
 }

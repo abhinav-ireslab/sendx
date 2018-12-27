@@ -18,7 +18,7 @@ import com.ireslab.sendx.entity.Account;
 import com.ireslab.sendx.service.AccountService;
 
 /**
- * @author Nitin
+ * @author iRESlab
  *
  */
 @Service(value = "userDetailsService")
@@ -41,7 +41,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 		BigInteger mobileNumber = new BigInteger(usernameToken[1]);
 		String countryDialCode = usernameToken[0];
 
-		LOG.debug("Checking account details for mobileNumber - " + mobileNumber + ", and countryDialCode - "
+		LOG.info("Checking account details for mobileNumber - " + mobileNumber + ", and countryDialCode - "
 				+ countryDialCode);
 
 		Account account = accountService.getAccount(mobileNumber, countryDialCode);

@@ -1,6 +1,6 @@
 /**
  * 
- */
+ *//*
 package com.ireslab.sendx.web;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,17 +32,15 @@ import com.ireslab.sendx.model.SignupResponse;
 import com.ireslab.sendx.model.SubscriptionPlanResponse;
 import com.ireslab.sendx.notification.MailMessage;
 import com.ireslab.sendx.notification.MailService;
-import com.ireslab.sendx.notification.MailType;
 import com.ireslab.sendx.service.ElectraAppService;
 import com.ireslab.sendx.service.TransactionalApiService;
 import com.ireslab.sendx.util.AppStatusCodes;
 import com.ireslab.sendx.util.PropConstants;
-import com.ireslab.sendx.web.BaseController.RequestType;
 
-/**
- * @author ireslab
+*//**
+ * @author iRESlab
  *
- */
+ *//*
 @RestController
 @RequestMapping(value = "/electra/*", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ElectraAppController {
@@ -64,10 +62,16 @@ public class ElectraAppController {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ElectraAppController.class);
 	
+	*//**
+	 * use to generate the company code.
+	 * 
+	 * @return
+	 * @throws JsonProcessingException
+	 *//*
 	@RequestMapping(value = "/generateCompanyCode", method = RequestMethod.GET)
 	public CompanyCodeResponse generateCompanyCode() throws JsonProcessingException {
 			
-        LOG.debug("Request received for Generating company code ");
+        LOG.info("Request received for Generating company code ");
 
         CompanyCodeResponse companyCodeResponse = electraAppService.generateCompanyCode();
 		
@@ -78,6 +82,16 @@ public class ElectraAppController {
 	}
 	
 	
+	*//**
+	 * use to check entered mobile number and email already registered or not.
+	 * 
+	 * @param mobileNumber
+	 * @param countryDialCode
+	 * @param companyCode
+	 * @param email
+	 * @return
+	 * @throws JsonProcessingException
+	 *//*
 	@RequestMapping(value = "/checkMobileNumberRegistration", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public AccountVerificationResponse verifyMobileNo(
 			@RequestParam(value = "mobileNumber", required = true) Long mobileNumber,
@@ -116,45 +130,53 @@ public class ElectraAppController {
 			accVerificationResponse.setMessage("Your registration denied. Please contact administrator");
 			accVerificationResponse.setCode(101);
 		}
-		LOG.debug("Account verification response sent - " + objectWriter.writeValueAsString(accVerificationResponse));
+		LOG.info("Account verification response sent - " + objectWriter.writeValueAsString(accVerificationResponse));
 
 		return accVerificationResponse;
 	}
 	
 	
-	/**
+	
+	*//**
+	 * use to register user.
+	 * 
 	 * @param signupRequest
+	 * @param request
 	 * @return
 	 * @throws JsonProcessingException
-	 */
+	 *//*
 	@RequestMapping(value = "/register", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	public SignupResponse registerClientUser(@RequestBody SignupRequest signupRequest, HttpServletRequest request)
 			throws JsonProcessingException {
 
 		
 
-		LOG.debug("JSON Request For Register - " + signupRequest.toString());
+		LOG.info("JSON Request For Register - ");
 		SignupResponse signupResponse = null;
 
 		signupResponse = electraAppService.registerClientUser(signupRequest);
-		LOG.debug("JSON Response - " + objectWriter.writeValueAsString(signupResponse));
+		LOG.info("JSON Response - ");
 
 		return signupResponse;
 	}
 	
 	
-	/**
+	
+	*//**
+	 * use to save the details of subscribed  plan by client.
+	 * 
 	 * @param clientSubscriptionRequest
+	 * @param request
 	 * @return
 	 * @throws JsonProcessingException
-	 */
+	 *//*
 	@RequestMapping(value = "/clientSubscriptionPlan", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ClientSubscriptionResponse clientSubscriptionPlan(@RequestBody ClientSubscriptionRequest clientSubscriptionRequest, HttpServletRequest request)
 			throws JsonProcessingException {
 
 		
 
-		LOG.debug("JSON Request For subscription plan - " + clientSubscriptionRequest.getClientSubscriptionDto().toString());
+		LOG.info("JSON Request For subscription plan - " + clientSubscriptionRequest.getClientSubscriptionDto().toString());
 		ClientSubscriptionResponse clientSubscriptionResponse = null;
 		ClientSubscriptionDto clientSubscriptionDto = clientSubscriptionRequest.getClientSubscriptionDto();
 		String pass = "Client@123";
@@ -162,7 +184,7 @@ public class ElectraAppController {
 		clientSubscriptionRequest.setClientSubscriptionDto(clientSubscriptionDto);
 
 		clientSubscriptionResponse = electraAppService.clientSubscriptionPlan(clientSubscriptionRequest);
-		LOG.debug("JSON Response after subscription plan- " + objectWriter.writeValueAsString(clientSubscriptionResponse));
+		LOG.info("JSON Response after subscription plan");
 		
 		if(clientSubscriptionResponse.getCode() == HttpStatus.OK.value()) {
 			MailMessage mailMessage = new MailMessage();
@@ -177,37 +199,62 @@ public class ElectraAppController {
 		return clientSubscriptionResponse;
 	}
 	
+	*//**
+	 * use to provide all details of client's subscription plan.
+	 * 
+	 * @param clientSubscriptionRequest
+	 * @param request
+	 * @return
+	 * @throws JsonProcessingException
+	 *//*
 	@RequestMapping(value = "/getClientSubscriptionPlan", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ClientSubscriptionResponse getClientSubscriptionPlan(@RequestBody ClientSubscriptionRequest clientSubscriptionRequest, HttpServletRequest request)
 			throws JsonProcessingException {
 
 		
 
-		LOG.debug("JSON Request For Get Client Subscription Plan - " +  clientSubscriptionRequest.getClientSubscriptionDto().toString());
+		LOG.info("JSON Request For Get Client Subscription Plan - " +  clientSubscriptionRequest.getClientSubscriptionDto().toString());
 		ClientSubscriptionResponse clientSubscriptionResponse = null;
 
 		clientSubscriptionResponse = electraAppService.getClientSubscriptionPlan(clientSubscriptionRequest);
-		LOG.debug("JSON Response - " + objectWriter.writeValueAsString(clientSubscriptionRequest));
+		LOG.info("Response sent for client subscription plan " );
 
 		return clientSubscriptionResponse;
 	}
 	
+	
+	*//**
+	 * use to check logged in app user client or agent.
+	 * 
+	 * 
+	 * @param clientSubscriptionRequest
+	 * @param request
+	 * @return
+	 * @throws JsonProcessingException
+	 *//*
 	@RequestMapping(value = "/isClientORNot", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ClientSubscriptionResponse isClientORNot(@RequestBody ClientSubscriptionRequest clientSubscriptionRequest, HttpServletRequest request)
 			throws JsonProcessingException {
 
 		
 
-		LOG.debug("JSON Request For Check Exist Client OR Not - " +  clientSubscriptionRequest.getClientSubscriptionDto().toString());
+		LOG.info("JSON Request For Check Exist Client OR Not - " +  clientSubscriptionRequest.getClientSubscriptionDto().toString());
 		ClientSubscriptionResponse clientSubscriptionResponse = null;
 
 		clientSubscriptionResponse = electraAppService.isClientORNot(clientSubscriptionRequest);
-		LOG.debug("JSON Response - " + objectWriter.writeValueAsString(clientSubscriptionRequest));
+		LOG.info("JSON Response for client or not - " + objectWriter.writeValueAsString(clientSubscriptionRequest));
 
 		return clientSubscriptionResponse;
 	}
 
 
+	*//**
+	 * @param email
+	 * @param pass
+	 * @param firstName
+	 * @param lastName
+	 * @return
+	 *//*
 	private String createMessage(String email, String pass, String firstName, String lastName) {
 
      String mailMessage = "<!DOCTYPE html>\r\n" + 
@@ -228,17 +275,24 @@ public class ElectraAppController {
 		return mailMessage;
 	}
 	
+	*//**
+	 * use to get all subscription plan list.
+	 * 
+	 * @return
+	 * @throws JsonProcessingException
+	 *//*
 	@RequestMapping(value = "/getSubscriptionPlanList", method = RequestMethod.GET)
 	public SubscriptionPlanResponse getSubscriptionPlanList() throws JsonProcessingException {
 			
-        LOG.debug("Request received for get subscription plan list ");
+        LOG.info("Request received for get subscription plan list ");
 
         SubscriptionPlanResponse subscriptionPlanResponse = electraAppService.getSubscriptionPlanList();
 		
-		 LOG.debug("Response after getting subscription plan list");
+		 LOG.info("Response after getting subscription plan list");
 		
 
 		return subscriptionPlanResponse;
 	}
 	
 }
+*/

@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -35,7 +34,6 @@ import org.thymeleaf.spring4.SpringTemplateEngine;
 
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.ireslab.sendx.electra.ElectraApiConfig;
-import com.ireslab.sendx.electra.Status;
 import com.ireslab.sendx.electra.dto.EmailRequest;
 import com.ireslab.sendx.electra.dto.PurchaserDto;
 import com.ireslab.sendx.electra.dto.ReceiptAndInvoiceUtilDto;
@@ -96,7 +94,7 @@ import com.itextpdf.tool.xml.XMLWorkerFontProvider;
 import com.itextpdf.tool.xml.XMLWorkerHelper;
 
 /**
- * @author Nitin
+ * @author iRESlab
  *
  */
 @Service
@@ -152,10 +150,10 @@ public class CommonServiceImpl  implements CommonService {
 	public CountryDetails getCountryDetails(String countryCode) {
 
 		CountryDetails countryDetails = null;
-		LOG.debug("Getting country details based on country code - " + countryCode);
+		LOG.info("Getting country details based on country code - " + countryCode);
 
 		if (countryDetailsMap.get(countryCode) == null) {
-			LOG.debug("Country details not found in memory map for country code - " + countryCode
+			LOG.info("Country details not found in memory map for country code - " + countryCode
 					+ " | Getting details from database");
 
 			Iterator<Country> countryIterator = countryRepo.findAll().iterator();
@@ -169,7 +167,7 @@ public class CommonServiceImpl  implements CommonService {
 		}
 
 		countryDetails = countryDetailsMap.get(countryCode);
-		LOG.debug("Country details - " + countryDetails.toString());
+		LOG.debug("Country list sent ");
 
 		return countryDetails;
 	}
@@ -184,7 +182,7 @@ public class CommonServiceImpl  implements CommonService {
 
 		List<CountryDetails> supportedCountryDetails = null;
 
-		LOG.debug("Getting supported countries details from database . . .");
+		LOG.info("Getting supported countries details from database . . .");
 
 		List<Country> countries = new ArrayList<>();
 		countryRepo.findAll().forEach(countries::add);
@@ -209,6 +207,8 @@ public class CommonServiceImpl  implements CommonService {
 	}
 
 	/**
+	 * use to validate contacts.
+	 * 
 	 * @param contactListVerificationRequest
 	 * @return
 	 */
@@ -264,7 +264,7 @@ public class CommonServiceImpl  implements CommonService {
 					
 					validContactDetails.setContactName(contactName);
 					validContactDetails.setIsRegistered(true);
-					//System.out.println("HEY Account image url found :"+account.getProfileImage());
+					
 					validContactDetails.setProfileImageUrl(account.getProfileImageUrl());
 			UserProfile		profile = transactionalApiService.invokeUserProfileAPI(account.getUserCorrelationId());
 				
@@ -278,15 +278,9 @@ public class CommonServiceImpl  implements CommonService {
 			validContactDetails.setIso4217CurrencyAlphabeticCode(country.getIso4217CurrencyAlphabeticCode());
 		});
 
-		/*
-		 * TODO - unregistered accounts (for demo launch, need to remove in production)
-		 */
-		/*
-		 * contactDetailsList.removeIf((eachDetail) -> (eachDetail.isRegistered() ==
-		 * false));
-		 */
+		
 
-		LOG.debug("No of valid contacts : " + contactDetailsList.size());
+		LOG.info("No of valid contacts : " + contactDetailsList.size());
 
 		ContactListVerificationResponse response = new ContactListVerificationResponse();
 		response.setCode(AppStatusCodes.SUCCESS);
@@ -347,12 +341,12 @@ public class CommonServiceImpl  implements CommonService {
 	@Override
 	public ProductResponse getProductList(ProductRequest productRequest) {
 		ProductResponse productList = new ProductResponse();
-		// Identified the client and set the value to url.
+		
 		Account account = accountRepository.findBymobileNumber(new BigInteger(productRequest.getMobileNumber()));
 		Profile profile =account.getProfile();
 		
 		ClientInfoRequest clientInfoRequest = new ClientInfoRequest();
-		//clientInfoRequest.setMobileNumber(account.getMobileNumber().toString());
+		
 		clientInfoRequest.setEmail(profile.getEmailAddress());
 		
 		ClientInfoResponse clientInformation = transactionalApiService.clientInformation(clientInfoRequest);
@@ -372,8 +366,7 @@ public class CommonServiceImpl  implements CommonService {
 			merchantDto.setCountryDialCode(profile.getCountry().getCountryDialCode());
 			productList.setMerchantDetails(merchantDto);
 			productList.setCurrencyCode(profile.getCountry().getIso4217CurrencyAlphabeticCode());
-			//productList.setCode(AppStatusCodes.SUCCESS);
-			//productList.setMessage(PropConstants.SUCCESS);
+			
 			return productList;
 		}
 	
@@ -386,44 +379,29 @@ public class CommonServiceImpl  implements CommonService {
 	 public PaymentResponse makePayment(PaymentRequest paymentRequest) {
 	  PaymentResponse paymentResponse  = new PaymentResponse();
 	  String makePaymentEndPointUrl =String.format(electraApiConfig.getMakePaymentApiEndpointUrl(),FORMAT_SPECIFIER);
-	     //TransactionalServiceImpl -LN 237 logic to transfer token to client account.
-	  //TokenManagementController electra
-	  
-	  
-	  
+	     
+	  	  
 	  TokenTransferRequest tokenTransferRequest =new TokenTransferRequest();
 	  
+	// Get seller account details from electra server based on unique code.
 	UserProfile merchantProfile=transactionalApiService.searchUserProfileByUniqueCode(paymentRequest.getMerchantDetails().getUniqueCode());
-	 //UserProfile merchantProfile=transactionalApiService.searchUserProfileByUniqueCode("27523");
-	  
-	  // Identified the client and set the value to url.
-	  //Account account = accountRepository.findBymobileNumber(new BigInteger(paymentRequest.getMerchantDetails().getMobileNumber()));
-	  
-	  
-	  //Profile profile =account.getProfile();
-	  // ClientInfoRequest clientInfoRequest = new ClientInfoRequest();
-	  // clientInfoRequest.setEmail(merchantProfile.getEmailAddress());
-	  // Get client information from electra server. and user information from sendx.
+	 
+	  // Get purchaser account details from sendx server.
 	   Account userAccount = accountRepository.findBymobileNumber(new BigInteger(paymentRequest.getPurchaserDetails().getMobileNumber()));
-	   //ClientInfoResponse clientInformation = transactionalApiService.clientInformation(clientInfoRequest);
-	   
-	   
-	  /* if (clientInformation.getClientCorrelationId()==null && clientInformation.getCode()==101) {
-	             paymentResponse.setCode(101);
-	             paymentResponse.setMessage("Please enter correct client QR code ");
-	             
-	   }else {*/
-		  // List<ProductDto> productList = paymentRequest.getProductList();
+	  
+	   //Initializing product list
 	   List<com.ireslab.sendx.electra.dto.ProductDto> productList = paymentRequest.getProductList();
 		   
 		   ExchangeRequest exchangeRequest = new ExchangeRequest();
 	    	exchangeRequest.setExchangeToken(countryRepo.findCountryByCountryDialCode(merchantProfile.getCountryDialCode()).getIso4217CurrencyAlphabeticCode());
 	    	exchangeRequest.setNativeCurrency(userAccount.getCountry().getIso4217CurrencyAlphabeticCode());
 	    	
+	    	//Get exchange rate from electra server.
 	    	ExchangeResponse exchangeResponse = transactionalApiService.getExchangeRate(exchangeRequest);
 	    	com.ireslab.sendx.electra.dto.ExchangeDto exchangeDto = exchangeResponse.getExchangeList().get(0);
 	    	double totalAmount=0.0;
-	    if (productList.size()>0 && !productList.isEmpty()) {
+	    	
+	    if (productList.size()>0 && !productList.isEmpty()) { 
 	    	boolean isgsnt = false;
 			boolean isgstAppliend = false;
 			
@@ -442,13 +420,12 @@ public class CommonServiceImpl  implements CommonService {
 				
 				
 			}
-	    	for (com.ireslab.sendx.electra.dto.ProductDto productDto : productList) {
+	    	for (com.ireslab.sendx.electra.dto.ProductDto productDto : productList) { //for loop for iterate product list and product based calculations.
 	    		
 	    		ProductAvailabilityRequest productAvailabilityRequest = new ProductAvailabilityRequest();
 	    		productAvailabilityRequest.setOrderQuantity(productDto.getPurchasedQty());
 	    		productAvailabilityRequest.setProductCode(productDto.getProductCode());
-	    		//ProductAvailabilityResponse productAvailabilityResponse = transactionalApiService.checkProductAvailability(productAvailabilityRequest);
-	    		//productDto.setGst(5+"");
+	    		
                 double itemTotal = 0.00;
 				
 				if(isgsnt && isgstAppliend) {
@@ -457,40 +434,38 @@ public class CommonServiceImpl  implements CommonService {
 				}else {
 					itemTotal = Double.parseDouble(productDto.getTotalItemPrice()) - (Double.parseDouble(productDto.getDiscount())*Double.parseDouble(productDto.getPurchasedQty()));
 				}
-				//double gstAmount = (itemTotal * (Double.parseDouble(productDto.getGst())/100));
-	    		
-	    		/*totalAmount = totalAmount + (Double.parseDouble(productDto.getProductCost())
-						* Double.parseDouble(productDto.getPurchasedQty()));*/
+				
 				
 				totalAmount = totalAmount + (itemTotal/* + gstAmount*/);
 			}
-			//tokenTransferRequest.setClientId(clientInformation.getClientCorrelationId()); // Set Merchant(Client CorrelationId)
+			
 			tokenTransferRequest.setClientId(merchantProfile.getUserCorrelationId());
 			tokenTransferRequest.setNoOfToken(String.valueOf(Math.round(totalAmount * 100.0) / 100.0)); // Calculate and set total no. of token to be transfer.
-			//tokenTransferRequest.setReceiverCorrelationId(clientInformation.getClientCorrelationId()); // Set Merchant(Client CorrelationId)
+			
 			tokenTransferRequest.setReceiverCorrelationId(merchantProfile.getUserCorrelationId());
-			//tokenTransferRequest.setSenderCorrelationId(userAccount.getUserCorrelationId());
+			
 			tokenTransferRequest.setSenderCorrelationId(userAccount.getUserCorrelationId());
 			paymentRequest.setTokenTransferRequest(tokenTransferRequest);
 		}
 	   
-	    //LOG.info("After payment for product response : "+paymentResponse.isClient());
-	   // if(paymentResponse.getCode()==100) {
-	    	//PurchaserDto purchaserDto = paymentRequest.getPurchaserDetails();
+	 
 	    com.ireslab.sendx.electra.dto.PurchaserDto purchaserDto = paymentRequest.getPurchaserDetails();
 	    	purchaserDto.setClient(false);
 	    	paymentRequest.setPurchaserDetails(purchaserDto);
 	    	
+	    	//Generate Invoice number and receipt number.
 	    	String invoiceAndReceiptNumber = org.apache.commons.lang3.StringUtils
 					.leftPad(String.valueOf(paymentRequest.getNotificationId()), 6, "0");
 			invoiceAndReceiptNumber = "RXC-" + invoiceAndReceiptNumber;
 			paymentRequest.setInvoiceNumber(invoiceAndReceiptNumber);
-	    	savePurchasedProduct(paymentRequest); //TODO save invoice no too.
+	    	savePurchasedProduct(paymentRequest); 
 	    	
 	    	
-	    	//Sending push notification
+	    	
 	        
 	    	 if(!paymentRequest.isOffline()) {
+	    		 
+	    		 //transfer amount to client account and update ledger..
 	    		 tokenTransferRequest
 	             .setNoOfToken(String.valueOf(Math.round(totalAmount * Double.parseDouble(exchangeDto.getExchangeRate()) * 100.0) / 100.0));
 	    		 paymentResponse = transactionalApiService.makePayment(makePaymentEndPointUrl, paymentRequest);
@@ -505,24 +480,22 @@ public class CommonServiceImpl  implements CommonService {
 		    	      deleteNotificationDto.setNotificationId(Integer.parseInt(paymentRequest.getNotificationId()));
 		    	      deleteNotificationRequest.setNotificationDto(deleteNotificationDto);
 		    	      deleteNotificationData(deleteNotificationRequest);
-	 	    		//notificationRepo.delete(Integer.parseInt(paymentRequest.getNotificationId()));
+	 	    		
 	 	    	}
+	    		 //update offline ledger.
 	    		 paymentResponse = transactionalApiService.makeOfflinePayment(tokenTransferRequest);
 	    		 AndroidPushNotificationRequest androidPushNotificationRequestForUser = new AndroidPushNotificationRequest();
 	    		 JSONObject bodyForUser = new JSONObject();
 	    		 JSONObject notificationForUser = new JSONObject();
 	    	     JSONObject dataForUser = new JSONObject();
 	    	     
-	    	     //productDetails
 	    	     
-	    	     JSONObject productDetails = new JSONObject();
-	    	     
-	    	   
+	    	   //Sending push notification to seller.
 	    	      try {
-	    			bodyForUser.put("to", "/topics/" + merchantProfile.getGcmRegisterKey());
+	    			bodyForUser.put("to", /*"/topics/" +*/ merchantProfile.getGcmRegisterKey());
 	    			  bodyForUser.put("priority", "high");
 	    			  	notificationForUser.put("title", "Electra Notification");
-	    			  	//notificationForUser.put("body", "Invoice for user "+userAccount.getMobileNumber());
+	    			  	
 	    			  	dataForUser.put("message", "Amount Paid!");
 	    			  	dataForUser.put("code", "103");
 	    			  bodyForUser.put("notification", notificationForUser);
@@ -532,7 +505,7 @@ public class CommonServiceImpl  implements CommonService {
 	    			  
 	    			  for (com.ireslab.sendx.electra.dto.ProductDto object : paymentRequest.getProductList()) {
 	    				  JSONObject product = new JSONObject();
-	    				  //Map<String, String> product =new HashMap<>();
+	    				 
 	    				product.put("productCode", object.getProductCode());
 	  					product.put("itemNameOrDesc", object.getItemNameOrDesc());
 	  					product.put("itemPrice", object.getItemPrice());
@@ -558,7 +531,7 @@ public class CommonServiceImpl  implements CommonService {
 	    			  bodyForUser.put("productDetails", productArray);
 	    			  
 	    			  JSONObject merchantDetails = new JSONObject();
-	    			 // Map<String, String> merchantDetails = new HashMap<>(); 
+	    			
 	    			  com.ireslab.sendx.electra.dto.MerchantDto merchantData = paymentRequest.getMerchantDetails();
 	    			  merchantDetails.put("countryDialCode",merchantData.getCountryDialCode() );
 	    			  merchantDetails.put("mobileNumber", paymentRequest.getMerchantDetails().getMobileNumber());
@@ -589,26 +562,14 @@ public class CommonServiceImpl  implements CommonService {
 	    			e.printStackTrace();
 	    			return paymentResponse;
 	    		}
-	    	      //bodyForUser.put("Message","Electra Notification User" );
+	    	     
 	    	      androidPushNotificationRequestForUser.setBody(bodyForUser);
+	    	      androidPushNotificationRequestForUser.setFirebaseServiceKey(merchantProfile.getFirebaseServiceKey());
 	    	      
-	    	      //--send push notification
 	    	      pushNotification(androidPushNotificationRequestForUser);
 	    	     
-	    	      //--save push notification data
-	    	     
-	    	      /*Notification notification = new Notification();
-	    	      notification.setCreatedDate(new Date());
-	    	      notification.setEmailAddress(merchantProfile.getEmailAddress());
-	    	      notification.setMobileNumber(""+merchantProfile.getMobileNumber());
-	    	      LOG.info("bodyForUser"+bodyForUser);
-	    	      LOG.info("bodyForUser toString"+bodyForUser.toString());
-	    	      notification.setNotificationData(bodyForUser.toString());
-	    	      notification.setStatus(false);
-	    	      notification.setInvoice(true);
-	    	      notification.setIsPaymentConfirm(true);
-	    	      notification.setIsOffline(paymentRequest.isOffline());*/
 	    	      
+	    	      //save notification data
 	    	      NotificationRequest notificationRequest = new NotificationRequest();
 	    	      com.ireslab.sendx.electra.dto.NotificationDto notificationDto = new com.ireslab.sendx.electra.dto.NotificationDto();
 	    	      notificationDto.setCorrelationId(merchantProfile.getUserCorrelationId());
@@ -624,8 +585,6 @@ public class CommonServiceImpl  implements CommonService {
 	    	      
 	    	      
 	    	      
-	    	      //saveNotifidationData(paymentRequest, notification);
-	    	      
 	    	      paymentResponse.setCode(100);
 	    	      paymentResponse.setMessage("Payment has been completed successfully.");
 	    	 }
@@ -636,28 +595,35 @@ public class CommonServiceImpl  implements CommonService {
 	 }
 	
 	
+	/**
+	 * use to save notification data in database.
+	 * 
+	 * @param notificationRequest
+	 * @return
+	 */
 	private NotificationResponse saveNotificationData(NotificationRequest notificationRequest) {
 		NotificationResponse notificationResponse = transactionalApiService.saveNotificationData(notificationRequest);
 		return notificationResponse;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.CommonService#generateReceiptInvoice(com.ireslab.sendx.electra.model.PaymentRequest)
+	 */
 	@Override
 	public PaymentResponse generateReceiptInvoice(PaymentRequest paymentRequest) {
 		
-		//Account account = accountRepository.findBymobileNumber(new BigInteger(paymentRequest.getMerchantDetails().getMobileNumber()));
+		//Get merchant account details form electra server based on unique code.
 		UserProfile merchantProfile=transactionalApiService.searchUserProfileByUniqueCode(paymentRequest.getMerchantDetails().getUniqueCode());
-		//UserProfile merchantProfile=transactionalApiService.searchUserProfileByUniqueCode("27523");
-				
-		//Profile profile =account.getProfile();
+		
 		   ClientInfoRequest clientInfoRequest = new ClientInfoRequest();
 		   clientInfoRequest.setEmail(merchantProfile.getEmailAddress());
-		  // Get client information from electra server. and user information from sendx.
-		  // Account userAccount = accountRepository.findBymobileNumber(new BigInteger(paymentRequest.getPurchaserDetails().getMobileNumber()));
+		
+		  // Get purchaser account details from electra server based on unique code
 		   UserProfile purchaserProfile=transactionalApiService.searchUserProfileByUniqueCode(paymentRequest.getPurchaserDetails().getUniqueCode());
-		  // UserProfile purchaserProfile=transactionalApiService.searchUserProfileByUniqueCode("76574");
+		  
 		   ClientInfoResponse clientInformation = transactionalApiService.clientInformation(clientInfoRequest);
 		   
-		   
+		   //sending push notification to merchant
 		   AndroidPushNotificationRequest androidPushNotificationRequestForMerchant = new AndroidPushNotificationRequest();
 	        AndroidPushNotificationRequest androidPushNotificationRequestForUser = new AndroidPushNotificationRequest();
 	        JSONObject bodyForMerchant = new JSONObject();
@@ -666,10 +632,10 @@ public class CommonServiceImpl  implements CommonService {
 	     JSONObject notificationForUser = new JSONObject();
 	     JSONObject dataForMerchant = new JSONObject();
 	     JSONObject dataForUser = new JSONObject();
-	     LOG.info("Merchant GCM Key : "+merchantProfile.getGcmRegisterKey()+" User GCM Key : "+purchaserProfile.getGcmRegisterKey());
+	     LOG.debug("\n Merchant GCM Key : "+merchantProfile.getGcmRegisterKey()+"\n User GCM Key : "+purchaserProfile.getGcmRegisterKey());
 	     try {
-	      //--merchant payload
-	      bodyForMerchant.put("to", "/topics/" + merchantProfile.getGcmRegisterKey());
+	     
+	      bodyForMerchant.put("to",  merchantProfile.getGcmRegisterKey());
 	      bodyForMerchant.put("priority", "high");
 	         notificationForMerchant.put("title", "Electra Notification");
 	         notificationForMerchant.put("body", "Receipt has been sent out!");
@@ -679,9 +645,10 @@ public class CommonServiceImpl  implements CommonService {
 	    bodyForMerchant.put("data", dataForMerchant);
 	    bodyForMerchant.put("Message","Electra Notification for Merchant" );
 	    androidPushNotificationRequestForMerchant.setBody(bodyForMerchant);
+	    androidPushNotificationRequestForMerchant.setFirebaseServiceKey(merchantProfile.getFirebaseServiceKey());
 	      
-	      //--user payload
-	      bodyForUser.put("to", "/topics/" + purchaserProfile.getGcmRegisterKey());
+	  //sending push notification to purchaser
+	      bodyForUser.put("to", purchaserProfile.getGcmRegisterKey());
 	      bodyForUser.put("priority", "high");
 	      	notificationForUser.put("title", "Electra Notification");
 	      	notificationForUser.put("body", "Receipt has been received!");
@@ -689,10 +656,11 @@ public class CommonServiceImpl  implements CommonService {
 	      	dataForUser.put("code", "102");
 	      bodyForUser.put("notification", notificationForUser);
 	      bodyForUser.put("data", dataForUser);
-	      //bodyForUser.put("Message","Electra Notification User" );
-	      androidPushNotificationRequestForUser.setBody(bodyForUser);
 	      
-	      //--send push notification
+	      androidPushNotificationRequestForUser.setBody(bodyForUser);
+	      androidPushNotificationRequestForUser.setFirebaseServiceKey(purchaserProfile.getFirebaseServiceKey());
+	      
+	     
 	      pushNotification(androidPushNotificationRequestForUser);
 	      pushNotification(androidPushNotificationRequestForMerchant);
 	      
@@ -701,7 +669,7 @@ public class CommonServiceImpl  implements CommonService {
 	      
 
 	     } catch (JSONException e) {
-	      // TODO Auto-generated catch block
+	      
 	      e.printStackTrace();
 	     }
 		   
@@ -713,7 +681,7 @@ public class CommonServiceImpl  implements CommonService {
    	         deleteNotificationDto.setNotificationId(Integer.parseInt(paymentRequest.getNotificationId()));
    	         deleteNotificationRequest.setNotificationDto(deleteNotificationDto);
    	         deleteNotificationData(deleteNotificationRequest);
-	    		//notificationRepo.delete(Integer.parseInt(paymentRequest.getNotificationId()));
+	    		
 	    	}
 		   
 		
@@ -738,7 +706,7 @@ public class CommonServiceImpl  implements CommonService {
 			directory.append("pdf");
 
 			String sFontDir = directory.toString();
-			//System.out.println("*****************************" + new File(sFontDir));
+			
 
 			XMLWorkerFontProvider fontImp = new XMLWorkerFontProvider(sFontDir, null);
 			FontFactory.setFontImp(fontImp);
@@ -751,10 +719,10 @@ public class CommonServiceImpl  implements CommonService {
         	 pdfWriterForInvoice = PdfWriter.getInstance(documentForInvoice, new FileOutputStream(invoiceFile));
         	 pdfWriterForReceipt = PdfWriter.getInstance(documentForReceipt, new FileOutputStream(receiptFile));
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		} catch (DocumentException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}
 		
@@ -764,18 +732,17 @@ public class CommonServiceImpl  implements CommonService {
          XMLWorkerHelper workerForReceipt = XMLWorkerHelper.getInstance();
          
          try {
- 			/*workerForReceipt.parseXHtml(pdfWriterForReceipt, documentForReceipt, new StringReader(receipt));
- 			workerForInvoice.parseXHtml(pdfWriterForInvoice, documentForInvoice, new StringReader(invoice));*/
+ 			
         	 
         	 workerForReceipt.parseXHtml(pdfWriterForReceipt, documentForReceipt,
  					new ByteArrayInputStream(receipt.getBytes()), null, null, fontImp);
 
  			
 
- 			workerForReceipt.parseXHtml(pdfWriterForInvoice, documentForInvoice,
+        	 workerForInvoice.parseXHtml(pdfWriterForInvoice, documentForInvoice,
  					new ByteArrayInputStream(invoice.getBytes()), null, null, fontImp);
  		} catch (IOException e) {
- 			// TODO Auto-generated catch block
+ 			
  			e.printStackTrace();
  		}
          documentForReceipt.close();
@@ -800,7 +767,7 @@ public class CommonServiceImpl  implements CommonService {
 		
 		mailMessage.setMessageBody(CommonMethods.formateEmailBodyForReceiptAndInvoice(emailRequestForPurchaser));
 		mailService.sendEmailInvoiceAndReceipt(mailMessage,new File("./invoice.pdf"), new File("./receipt.pdf"));
-		LOG.debug("mail sent to client ! ");
+		LOG.info("mail sent to seller ! ");
 		
 		String invoiceClient=generateInvoiceOrReceiptForClient(paymentRequest, merchantProfile, purchaserProfile, clientInformation, "INVOICE");
     	String receiptClient=generateInvoiceOrReceiptForClient(paymentRequest, merchantProfile, purchaserProfile, clientInformation, "RECEIPT");
@@ -828,8 +795,7 @@ public class CommonServiceImpl  implements CommonService {
         XMLWorkerHelper workerForReceiptClient = XMLWorkerHelper.getInstance();
         
         try {
-        	/*workerForReceiptClient.parseXHtml(pdfWriterForReceiptClient, documentForReceiptClient, new StringReader(receiptClient));
-			workerForInvoiceClient.parseXHtml(pdfWriterForInvoiceClient, documentForInvoiceClient, new StringReader(invoiceClient));*/
+        	
         	
         	workerForReceiptClient.parseXHtml(pdfWriterForReceiptClient, documentForReceiptClient,
 					new ByteArrayInputStream(receiptClient.getBytes()), null, null, fontImp);
@@ -861,7 +827,7 @@ public class CommonServiceImpl  implements CommonService {
 
 		userMailMessage.setMessageBody(CommonMethods.formateEmailBodyForReceiptAndInvoice(emailRequestForMerchant));
 		mailService.sendEmailInvoiceAndReceipt(userMailMessage,new File("./invoiceClient.pdf"), new File("./receiptClient.pdf"));
-		LOG.debug("mail sent to user ! ");
+		LOG.debug("mail sent to purchaser ! ");
 		
 		PaymentResponse paymentResponse = new PaymentResponse();
 		paymentResponse.setCode(100);
@@ -873,10 +839,26 @@ public class CommonServiceImpl  implements CommonService {
 	}	
 	
 	
+	/**
+	 * use to send push notification.
+	 * 
+	 * @param androidPushNotificationRequest
+	 * @return
+	 */
 	private String pushNotification(AndroidPushNotificationRequest androidPushNotificationRequest) {
 		  return pushNotificationService.sendPushNotification(androidPushNotificationRequest);
 		 }
 	
+	/**
+	 * This function use to generate invoice and receipt.
+	 * 
+	 * @param paymentRequest
+	 * @param clientAccount
+	 * @param purchaserProfile
+	 * @param clientInformation
+	 * @param type
+	 * @return
+	 */
 	private String generateInvoiceOrReceipt(PaymentRequest paymentRequest, UserProfile clientAccount, UserProfile purchaserProfile,ClientInfoResponse clientInformation, String type) {
 		String outPutString=null;
 		
@@ -887,16 +869,14 @@ public class CommonServiceImpl  implements CommonService {
     		merchantName = paymentRequest.getMerchantDetails().getFirstName()+" "+paymentRequest.getMerchantDetails().getLastName();
     	}
 		
-		//Profile userProfile = userAccount.getProfile();
-		//Profile clientProfile = clientAccount.getProfile();
-    	//ExchangeRequest
+		
     	
     	Country country = countryRepo.findCountryByCountryDialCode(purchaserProfile.getCountryDialCode());
     	Country merchantCountry = countryRepo.findCountryByCountryDialCode(clientAccount.getCountryDialCode());
     	
 		
 		StringBuilder tabledata = new StringBuilder();
-		//tabledata.append("");
+		
 		Double tolal = 0.0;
 		Double grandTotal = 0.0;
 		Double gstTotal = 0.0;
@@ -919,7 +899,7 @@ public class CommonServiceImpl  implements CommonService {
     	com.ireslab.sendx.electra.dto.ExchangeDto exchangeDto = exchangeResponse.getExchangeList().get(0);
 		
 		
-		//List<ProductDto> productList = paymentRequest.getProductList();
+		
     	List<com.ireslab.sendx.electra.dto.ProductDto> productList = paymentRequest.getProductList();
     	String gstNo = "";
 		if (paymentRequest.getMerchantDetails().getGstn() != null && !StringUtils.isEmpty(paymentRequest.getMerchantDetails().getGstn()) && !paymentRequest.getMerchantDetails().getGstn().equalsIgnoreCase("null")) {
@@ -938,30 +918,14 @@ public class CommonServiceImpl  implements CommonService {
 			
 			
 		}
-		//for(ProductDto productDto:productList) {
+		
 		int count = 0;
 			if(type.equals("INVOICE")) {
 				int paymentTermId = 0;
 				if(isgsnt && isgstAppliend) {
 					
-				for(com.ireslab.sendx.electra.dto.ProductDto productDto:productList) {
-					String purchasedQty = decimalFormat.format(new Double(productDto.getPurchasedQty()));
-					/*String productCost = decimalFormat.format(Double.parseDouble(productDto.getProductCost())
-							* Double.parseDouble(exchangeDto.getExchangeRate()));
-					
-					String itemTotal = decimalFormat.format((Double.parseDouble(productDto.getPurchasedQty())
-							* Double.parseDouble(productDto.getProductCost()))
-							* Double.parseDouble(exchangeDto.getExchangeRate()));
-					//productDto.setGst(5+"");
-					double itemTotalClac = (Double.parseDouble(productDto.getPurchasedQty())
-							* Double.parseDouble(productDto.getProductCost()))
-							* Double.parseDouble(exchangeDto.getExchangeRate());
-					//double gstAmount = (itemTotalClac * (Double.parseDouble(productDto.getGst())/100));
-					double gstAmount = ((Double.parseDouble(productDto.getPurchasedQty())
-							* Double.parseDouble(productDto.getProductCost())) * (Double.parseDouble(productDto.getGst())/100))* Double.parseDouble(exchangeDto.getExchangeRate());
-					double netTotal = gstAmount + itemTotalClac;
-					String itemTotal = decimalFormat.format(itemTotalClac);*/
-					
+				for(com.ireslab.sendx.electra.dto.ProductDto productDto:productList) { //for loop for product based calculation for invoice.
+														
 					
 					String productCost = decimalFormat.format(Double.parseDouble(productDto.getItemPrice())
 							* Double.parseDouble(exchangeDto.getExchangeRate()));
@@ -974,7 +938,7 @@ public class CommonServiceImpl  implements CommonService {
 					double gstAmount = (Double.parseDouble(productDto.getPurchasedQty())
 							* Double.parseDouble(productDto.getTotalTaxInclusive())*Double.parseDouble(exchangeDto.getExchangeRate()));
 					double netTotal = gstAmount + (itemTotalClac - itemDiscount);
-					String itemTotal = decimalFormat.format(itemTotalClac);
+					//String itemTotal = decimalFormat.format(itemTotalClac);
 					
 					
 					tabledata.append("<tr><td >");
@@ -1036,29 +1000,14 @@ public class CommonServiceImpl  implements CommonService {
 			
 			termsAndConditionList.add(productDto.getTermsAndConditions());
 			}
-				}
+				}//end of for loop
 				
 				}
 				else {
 					
-					for(com.ireslab.sendx.electra.dto.ProductDto productDto:productList) {
-						String purchasedQty = decimalFormat.format(new Double(productDto.getPurchasedQty()));
-						/*String productCost = decimalFormat.format(Double.parseDouble(productDto.getProductCost())
-								* Double.parseDouble(exchangeDto.getExchangeRate()));
+					for(com.ireslab.sendx.electra.dto.ProductDto productDto:productList) { //for loop for product based calculation for invoice
 						
-						String itemTotal = decimalFormat.format((Double.parseDouble(productDto.getPurchasedQty())
-								* Double.parseDouble(productDto.getProductCost()))
-								* Double.parseDouble(exchangeDto.getExchangeRate()));
-						//productDto.setGst(5+"");
-						double itemTotalClac = (Double.parseDouble(productDto.getPurchasedQty())
-								* Double.parseDouble(productDto.getProductCost()))
-								* Double.parseDouble(exchangeDto.getExchangeRate());
-						//double gstAmount = (itemTotalClac * (Double.parseDouble(productDto.getGst())/100));
-						double gstAmount = ((Double.parseDouble(productDto.getPurchasedQty())
-								* Double.parseDouble(productDto.getProductCost())) * (Double.parseDouble(productDto.getGst())/100))* Double.parseDouble(exchangeDto.getExchangeRate());
-						double netTotal = gstAmount + itemTotalClac;
-						String itemTotal = decimalFormat.format(itemTotalClac);*/
-						
+												
 						
 						String productCost = decimalFormat.format(Double.parseDouble(productDto.getItemPrice())
 								* Double.parseDouble(exchangeDto.getExchangeRate()));
@@ -1071,7 +1020,7 @@ public class CommonServiceImpl  implements CommonService {
 						double gstAmount = (Double.parseDouble(productDto.getPurchasedQty())
 								* Double.parseDouble(productDto.getTotalTaxInclusive())*Double.parseDouble(exchangeDto.getExchangeRate()));
 						double netTotal = (itemTotalClac - itemDiscount);
-						String itemTotal = decimalFormat.format(itemTotalClac);
+						//String itemTotal = decimalFormat.format(itemTotalClac);
 						
 						
 						tabledata.append("<tr><td >");
@@ -1115,7 +1064,7 @@ public class CommonServiceImpl  implements CommonService {
 				
 				termsAndConditionList.add(productDto.getTermsAndConditions());
 				}
-					}
+					}//end of for loop
 					
 				}
 				
@@ -1167,28 +1116,14 @@ public class CommonServiceImpl  implements CommonService {
 			
 			
 			
-			//int count =0;
-			//String.format ("%03d", ++count);
+			
 			if(type.equals("RECEIPT")) {
 				int paymentTermId = 0;
-				//paymentTerm
+				
 				if(isgsnt && isgstAppliend) {
 				
-				for(com.ireslab.sendx.electra.dto.ProductDto productDto:productList) {
-					//String itemTotal = decimalFormat.format(new Double(productDto.getTotalItemPrice()));
-					/*String itemTotal = decimalFormat.format((Double.parseDouble(productDto.getPurchasedQty())
-							* Double.parseDouble(productDto.getProductCost()))
-							* Double.parseDouble(exchangeDto.getExchangeRate()));*/
+				for(com.ireslab.sendx.electra.dto.ProductDto productDto:productList) {// for loop for product based calculation for receipt.
 					
-					/*
-					double itemTotalClac = (Double.parseDouble(productDto.getPurchasedQty())
-							* Double.parseDouble(productDto.getProductCost()))
-							* Double.parseDouble(exchangeDto.getExchangeRate());
-					//double gstAmount = (itemTotalClac * (Double.parseDouble(productDto.getGst())/100));
-					double gstAmount = ((Double.parseDouble(productDto.getPurchasedQty())
-							* Double.parseDouble(productDto.getProductCost())) * (Double.parseDouble(productDto.getGst())/100))* Double.parseDouble(exchangeDto.getExchangeRate());
-					double netTotal = gstAmount + itemTotalClac;
-					String itemTotal = decimalFormat.format(itemTotalClac);*/
 					
 					double itemDiscount = (Double.parseDouble(productDto.getPurchasedQty())
 							* Double.parseDouble(productDto.getDiscount())* Double.parseDouble(exchangeDto.getExchangeRate()));
@@ -1198,7 +1133,7 @@ public class CommonServiceImpl  implements CommonService {
 					double gstAmount = (Double.parseDouble(productDto.getPurchasedQty())
 							* Double.parseDouble(productDto.getTotalTaxInclusive())* Double.parseDouble(exchangeDto.getExchangeRate()));
 					double netTotal = gstAmount + (itemTotalClac - itemDiscount);
-					String itemTotal = decimalFormat.format(itemTotalClac);
+					//String itemTotal = decimalFormat.format(itemTotalClac);
 					
 					
 					tabledata.append("<tr><td>");
@@ -1234,8 +1169,7 @@ public class CommonServiceImpl  implements CommonService {
 					tabledata.append("</td><td class=\"text-right\">");
 					tabledata.append(decimalFormat.format(new Double(netTotal)));
 					tabledata.append("</td></tr>");
-				/*tolal = tolal + (Double.parseDouble(productDto.getPurchasedQty())
-						* Double.parseDouble(productDto.getProductCost()));*/
+				
 				tolal = tolal + itemTotalClac;
 				
                 grandTotal = grandTotal + netTotal;
@@ -1250,21 +1184,8 @@ public class CommonServiceImpl  implements CommonService {
 				}
 			}
 		else {
-			for(com.ireslab.sendx.electra.dto.ProductDto productDto:productList) {
-				//String itemTotal = decimalFormat.format(new Double(productDto.getTotalItemPrice()));
-				/*String itemTotal = decimalFormat.format((Double.parseDouble(productDto.getPurchasedQty())
-						* Double.parseDouble(productDto.getProductCost()))
-						* Double.parseDouble(exchangeDto.getExchangeRate()));*/
+			for(com.ireslab.sendx.electra.dto.ProductDto productDto:productList) {// for loop for product based calculation for receipt.
 				
-				/*
-				double itemTotalClac = (Double.parseDouble(productDto.getPurchasedQty())
-						* Double.parseDouble(productDto.getProductCost()))
-						* Double.parseDouble(exchangeDto.getExchangeRate());
-				//double gstAmount = (itemTotalClac * (Double.parseDouble(productDto.getGst())/100));
-				double gstAmount = ((Double.parseDouble(productDto.getPurchasedQty())
-						* Double.parseDouble(productDto.getProductCost())) * (Double.parseDouble(productDto.getGst())/100))* Double.parseDouble(exchangeDto.getExchangeRate());
-				double netTotal = gstAmount + itemTotalClac;
-				String itemTotal = decimalFormat.format(itemTotalClac);*/
 				
 				double itemDiscount = (Double.parseDouble(productDto.getPurchasedQty())
 						* Double.parseDouble(productDto.getDiscount())* Double.parseDouble(exchangeDto.getExchangeRate()));
@@ -1274,7 +1195,7 @@ public class CommonServiceImpl  implements CommonService {
 				double gstAmount = (Double.parseDouble(productDto.getPurchasedQty())
 						* Double.parseDouble(productDto.getTotalTaxInclusive())* Double.parseDouble(exchangeDto.getExchangeRate()));
 				double netTotal = (itemTotalClac - itemDiscount);
-				String itemTotal = decimalFormat.format(itemTotalClac);
+			//	String itemTotal = decimalFormat.format(itemTotalClac);
 				
 				
 				tabledata.append("<tr><td>");
@@ -1292,8 +1213,7 @@ public class CommonServiceImpl  implements CommonService {
 				
 				tabledata.append(decimalFormat.format(new Double(netTotal)));
 				tabledata.append("</td></tr>");
-			/*tolal = tolal + (Double.parseDouble(productDto.getPurchasedQty())
-					* Double.parseDouble(productDto.getProductCost()));*/
+			
 			tolal = tolal + itemTotalClac;
 			
             grandTotal = grandTotal + netTotal;
@@ -1306,47 +1226,33 @@ public class CommonServiceImpl  implements CommonService {
 			}
 			}	
 				}
+				
+				if(paymentTermId == 0) {
+					paymentTerm = "Pay on Delivery";
+				}
+				else {
+					paymentTerm = paymentTermId+" Days";
+				}
 		}
 			
 			
 	    	
-	    	//tolal = tolal*(Double.parseDouble(exchangeDto.getExchangeRate()));
-			
-			/*SCRU-213 : Invoice No. should be not display hard coded (Refer to attached Screenshot)*/
-			
-			/*String invoiceAndReceiptNumber = org.apache.commons.lang3.StringUtils
-					.leftPad(String.valueOf(paymentRequest.getNotificationId()), 6, "0");
-			invoiceAndReceiptNumber = "RXC-" + invoiceAndReceiptNumber;*/
+	    	
 			
 			String invoiceAndReceiptNumber = paymentRequest.getInvoiceNumber();
-			/*String gstNo = "";				
-			if(paymentRequest.getMerchantDetails().getGstn() != null && !StringUtils.isEmpty(paymentRequest.getMerchantDetails().getGstn())) {
-						gstNo = ""+paymentRequest.getMerchantDetails().getGstn();
-					}*/
 			
-		/*SCRU-211 : Created Date and Invoice Date should be invoice generated date (Current Date)*/
-			//Country country = clientAccount.getProfile().getCountry();
 			SimpleDateFormat dateFormateForReceipt = new SimpleDateFormat ("EEEE dd/MM/yyyy hh:mm a");
 			dateFormateForReceipt.setTimeZone(TimeZone.getTimeZone(country.getCountryTimeZone()));
 			String receiptDate =  dateFormateForReceipt.format(new Date());
-		//Date date = new Date();
-		//String invoiceAndReceiptGeneratedDate = CommonUtils.formatDate(date, "EEEE MM/dd/yy hh:mm a");
+		
 			String invoiceAndReceiptGeneratedDate = receiptDate;
 		String totalString = decimalFormat.format(tolal);
-		//String gstTotalString = String.format("%.2f", new Double(gstTotal));
-		//String gstTotalString = decimalFormat.format(gstTotal);
+		
 		String grandTotalString = decimalFormat.format(grandTotal);
 		String discountString = decimalFormat.format(discount);
 		
-		/*String str=String.valueOf(gstTotal);
-		char gstTotalChar[] = String.valueOf(gstTotal).toCharArray();
-		int indexOfPoint =str.indexOf('.')+2;
-		String requiredData="";
-		for(int i=0;i<=indexOfPoint;i++) {
-			requiredData=requiredData+gstTotalChar[i];
-		}
-		//String gstTotalString = requiredData;
-*/		String gstTotalString = decimalFormat.format(gstTotal);
+		
+	String gstTotalString = decimalFormat.format(gstTotal);
 
 		String recieptTableHeader = "";
 		String invoiceTableHeader = "";
@@ -1639,16 +1545,7 @@ public class CommonServiceImpl  implements CommonService {
 				"      <table class=\"billTable \" cellspacing=\"0\">\r\n" + 
 				invoiceTableHeader+ 
 				tabledata.toString() + "  "+
-				/*"        <tr>\r\n" + 
-				"          <td class=\"text-left\">1.</td>\r\n" + 
-				"          <td class=\"text-left\">Other meat and edible meat offal meatoff</td>\r\n" + 
-				"          <td class=\"text-right\">02080208</td>\r\n" + 
-				"          <td class=\"text-right\">10</td>\r\n" + 
-				"          <td class=\"text-right\">150</td>\r\n" + 
-				"          <td class=\"text-right\">0</td>\r\n" + 
-				"          <td class=\"text-right\">IGST@5</td>\r\n" + 
-				"          <td class=\"text-right\">1575</td>\r\n" + 
-				"        </tr>\r\n" + */
+				
 				"\r\n" + 
 				"        <tr>\r\n" + 
 				"          <td colspan="+tdSpan+" style=\"background-color:#cdcdcd;padding:1px\"></td>\r\n" + 
@@ -1695,7 +1592,7 @@ public class CommonServiceImpl  implements CommonService {
 				"</body>\r\n" + 
 				"\r\n" + 
 				"</html>";
-		//System.out.println("invoice 1 ---------- "+invoice);
+		
 		
 		String receipt = "<!DOCTYPE html>\r\n" + "<html>\r\n" + "\r\n" + "<head>\r\n"
 				+ "    <meta charset=\"utf-8\" />\r\n"
@@ -1742,7 +1639,7 @@ public class CommonServiceImpl  implements CommonService {
 				+ "            <div class=\"text-center\">\r\n"
 				+ "                <h1 class=\"noMargin\" style=\"margin-bottom: 2px;\">Receipt</h1>\r\n"
 				+ "                <h5 class=\"noMargin\">" + receiptDate + "</h5>\r\n" +
-				// " <h5 class=\"noMargin\">Returns before 10/24/12</h5>\r\n" +
+				
 				"            </div>\r\n" + "        </div><br/>\r\n" + "        <div class=\"headerDetails\">\r\n"
 				+ "            <div class=\"addressDetails float-left\">\r\n" + "                <b>\r\n"
 				+ "                    Billed To:\r\n" + "                </b>\r\n" + "                \r\n"
@@ -1752,9 +1649,7 @@ public class CommonServiceImpl  implements CommonService {
 				+ purchaserProfile.getMobileNumber() + "\r\n" + "                <br/>\r\n"
 				+ "                <div class=\"address\">\r\n" + "                    "
 				+ purchaserProfile.getResidentialAddress() + "\r\n" + "                </div>\r\n" +
-				// " <!-- <br/>Technologies\r\n" +
-				// " <br/>H-122, second floor, sec-63\r\n" +
-				// " <br/>Noida. -->\r\n" +
+				
 				"            </div>\r\n" + "            <div class=\"bookingDetails float-right\">\r\n"
 				+ "                <table class=\"detailtable\" cellspacing=\"0\">\r\n" + "                    <tr>\r\n"
 				+ "                        <th>Receipt No</th>\r\n" + "                        <td>\r\n"
@@ -1791,10 +1686,10 @@ public class CommonServiceImpl  implements CommonService {
 				+ "        </div>\r\n" + "    </div>\r\n" + "    <!--main container-->\r\n" + "\r\n" + "</body>\r\n"
 				+ "\r\n" + "</html>";
 		
-		//System.out.println("receipt 1 ---------- "+receipt);
+		
 		
 		if (type.equals("INVOICE")) {
-			// TODO write logic to generate invoice.
+			
 			outPutString = invoice;
 
 			
@@ -1886,8 +1781,7 @@ public class CommonServiceImpl  implements CommonService {
 							// call method to generate HTML string using thymeleaf
 						String invoiceByThymeleaf =	generateInvoiceAndPdfString(dto);
 							
-			System.out.println("invoiceHtmlGenerationByThymeleaf :-------\n  "+invoiceByThymeleaf+"\n -----------");
-							//----------------------------------
+			
 			
 			
 			
@@ -1982,14 +1876,24 @@ public class CommonServiceImpl  implements CommonService {
 			
 			// call method to generate HTML string using thymeleaf
 		String invoiceByThymeleaf =	generateInvoiceAndPdfString(dto);
-		System.out.println("receiptHtmlGenerationByThymeleaf :-------\n  "+invoiceByThymeleaf+"\n -----------");
-			//----------------------------------
+		
+			
 		}
 		
 		return outPutString;
 		}
 	
 	
+	/**
+	 * use to generate invoice and receipt for client.
+	 * 
+	 * @param paymentRequest
+	 * @param merchantProfile
+	 * @param purchaserProfile
+	 * @param clientInformation
+	 * @param type
+	 * @return
+	 */
 	private String generateInvoiceOrReceiptForClient(PaymentRequest paymentRequest, UserProfile merchantProfile, UserProfile purchaserProfile,ClientInfoResponse clientInformation, String type) {
 		String outPutString=null;
 		
@@ -2000,13 +1904,10 @@ public class CommonServiceImpl  implements CommonService {
     		merchantName = paymentRequest.getMerchantDetails().getFirstName()+" "+paymentRequest.getMerchantDetails().getLastName();
     	}
 		
-		//Profile userProfile = userAccount.getProfile();
-		//Profile clientProfile = clientAccount.getProfile();
 		
-		 
 		
 		StringBuilder tabledata = new StringBuilder();
-		//tabledata.append("");
+		
 		Double tolal = 0.0;
 		Double grandTotal = 0.0;
 		Double gstTotal = 0.0;
@@ -2025,7 +1926,7 @@ public class CommonServiceImpl  implements CommonService {
 		
 		Country country = countryRepo.findCountryByCountryDialCode(merchantProfile.getCountryDialCode());
 		
-		//List<ProductDto> productList = paymentRequest.getProductList();
+		
 		List<com.ireslab.sendx.electra.dto.ProductDto> productList = paymentRequest.getProductList();
 		
 		String gstNo = "";
@@ -2046,25 +1947,15 @@ public class CommonServiceImpl  implements CommonService {
 			
 		}
 		int count = 0;
-		//for(ProductDto productDto:productList) {
+		
 			if(type.equals("INVOICE")) {
 				int paymentTermId = 0;
 				if(isgsnt && isgstAppliend) {
 					
-					for(com.ireslab.sendx.electra.dto.ProductDto productDto:productList) {
-						String purchasedQty = decimalFormat.format(new Double(productDto.getPurchasedQty()));
+					for(com.ireslab.sendx.electra.dto.ProductDto productDto:productList) {// for loop for product based calculation for invoice.
+						//String purchasedQty = decimalFormat.format(new Double(productDto.getPurchasedQty()));
 						String productCost = decimalFormat.format(new Double(productDto.getItemPrice()));
-						/*String productCost = decimalFormat.format(new Double(productDto.getProductCost()));
-						String itemTotal = decimalFormat.format(Double.parseDouble(productDto.getPurchasedQty())
-								* Double.parseDouble(productDto.getProductCost()));
-						//productDto.setGst(5+"");
-						double itemTotalClac = Double.parseDouble(productDto.getPurchasedQty())
-								* Double.parseDouble(productDto.getProductCost());
-						//double gstAmount = (itemTotalClac * (Double.parseDouble(productDto.getGst())/100));
-						double gstAmount = ((Double.parseDouble(productDto.getPurchasedQty())
-								* Double.parseDouble(productDto.getProductCost())) * (Double.parseDouble(productDto.getGst())/100));
-						double netTotal = gstAmount + itemTotalClac;
-						String itemTotal = decimalFormat.format(itemTotalClac);*/
+						
 						
 						double itemDiscount = (Double.parseDouble(productDto.getPurchasedQty())
 								* Double.parseDouble(productDto.getDiscount()));
@@ -2074,7 +1965,7 @@ public class CommonServiceImpl  implements CommonService {
 						double gstAmount = (Double.parseDouble(productDto.getPurchasedQty())
 								* Double.parseDouble(productDto.getTotalTaxInclusive()));
 						double netTotal = gstAmount + (itemTotalClac - itemDiscount);
-						String itemTotal = decimalFormat.format(itemTotalClac);
+						//String itemTotal = decimalFormat.format(itemTotalClac);
 						
 						tabledata.append("<tr><td >");
 						tabledata.append(++count);
@@ -2137,20 +2028,10 @@ public class CommonServiceImpl  implements CommonService {
 					
 				}else {
 					
-				for(com.ireslab.sendx.electra.dto.ProductDto productDto:productList) {
-					String purchasedQty = decimalFormat.format(new Double(productDto.getPurchasedQty()));
+				for(com.ireslab.sendx.electra.dto.ProductDto productDto:productList) {// for loop for product based calculation for invoice.
+					//String purchasedQty = decimalFormat.format(new Double(productDto.getPurchasedQty()));
 					String productCost = decimalFormat.format(new Double(productDto.getItemPrice()));
-					/*String productCost = decimalFormat.format(new Double(productDto.getProductCost()));
-					String itemTotal = decimalFormat.format(Double.parseDouble(productDto.getPurchasedQty())
-							* Double.parseDouble(productDto.getProductCost()));
-					//productDto.setGst(5+"");
-					double itemTotalClac = Double.parseDouble(productDto.getPurchasedQty())
-							* Double.parseDouble(productDto.getProductCost());
-					//double gstAmount = (itemTotalClac * (Double.parseDouble(productDto.getGst())/100));
-					double gstAmount = ((Double.parseDouble(productDto.getPurchasedQty())
-							* Double.parseDouble(productDto.getProductCost())) * (Double.parseDouble(productDto.getGst())/100));
-					double netTotal = gstAmount + itemTotalClac;
-					String itemTotal = decimalFormat.format(itemTotalClac);*/
+					
 					
 					double itemDiscount = (Double.parseDouble(productDto.getPurchasedQty())
 							* Double.parseDouble(productDto.getDiscount()));
@@ -2160,7 +2041,7 @@ public class CommonServiceImpl  implements CommonService {
 					double gstAmount = (Double.parseDouble(productDto.getPurchasedQty())
 							* Double.parseDouble(productDto.getTotalTaxInclusive()));
 					double netTotal = (itemTotalClac - itemDiscount);
-					String itemTotal = decimalFormat.format(itemTotalClac);
+					//String itemTotal = decimalFormat.format(itemTotalClac);
 					
 					tabledata.append("<tr><td >");
 					tabledata.append(++count);
@@ -2252,23 +2133,14 @@ public class CommonServiceImpl  implements CommonService {
 			}
 			
 			
-			//int count =0;
-			//String.format ("%03d", ++count);
+			
 			if(type.equals("RECEIPT")) {
 				
 				int paymentTermId = 0;
 				//paymentTerm
 				if(isgsnt && isgstAppliend) {
-					for(com.ireslab.sendx.electra.dto.ProductDto productDto:productList) {
-						/*String itemTotal = decimalFormat.format(Double.parseDouble(productDto.getPurchasedQty())
-								* Double.parseDouble(productDto.getProductCost()));*/
+					for(com.ireslab.sendx.electra.dto.ProductDto productDto:productList) {// for loop for product based calculation for receipt.
 						
-						/*double itemTotalClac = (Double.parseDouble(productDto.getPurchasedQty())
-								* Double.parseDouble(productDto.getProductCost()));
-						double gstAmount = ((Double.parseDouble(productDto.getPurchasedQty())
-								* Double.parseDouble(productDto.getProductCost())) * (Double.parseDouble(productDto.getGst())/100));
-						double netTotal = gstAmount + itemTotalClac;
-						String itemTotal = decimalFormat.format(itemTotalClac);*/
 						
 						double itemDiscount = (Double.parseDouble(productDto.getPurchasedQty())
 								* Double.parseDouble(productDto.getDiscount()));
@@ -2278,7 +2150,7 @@ public class CommonServiceImpl  implements CommonService {
 						double gstAmount = (Double.parseDouble(productDto.getPurchasedQty())
 								* Double.parseDouble(productDto.getTotalTaxInclusive()));
 						double netTotal = gstAmount + (itemTotalClac - itemDiscount);
-						String itemTotal = decimalFormat.format(itemTotalClac);
+						//String itemTotal = decimalFormat.format(itemTotalClac);
 						
 						tabledata.append("<tr><td>");
 						tabledata.append(++count);
@@ -2325,16 +2197,8 @@ public class CommonServiceImpl  implements CommonService {
 					}
 				}
 				}else {
-				for(com.ireslab.sendx.electra.dto.ProductDto productDto:productList) {
-					/*String itemTotal = decimalFormat.format(Double.parseDouble(productDto.getPurchasedQty())
-							* Double.parseDouble(productDto.getProductCost()));*/
+				for(com.ireslab.sendx.electra.dto.ProductDto productDto:productList) {// for loop for product based calculation for receipt.
 					
-					/*double itemTotalClac = (Double.parseDouble(productDto.getPurchasedQty())
-							* Double.parseDouble(productDto.getProductCost()));
-					double gstAmount = ((Double.parseDouble(productDto.getPurchasedQty())
-							* Double.parseDouble(productDto.getProductCost())) * (Double.parseDouble(productDto.getGst())/100));
-					double netTotal = gstAmount + itemTotalClac;
-					String itemTotal = decimalFormat.format(itemTotalClac);*/
 					
 					double itemDiscount = (Double.parseDouble(productDto.getPurchasedQty())
 							* Double.parseDouble(productDto.getDiscount()));
@@ -2343,9 +2207,9 @@ public class CommonServiceImpl  implements CommonService {
 					
 					double gstAmount = (Double.parseDouble(productDto.getPurchasedQty())
 							* Double.parseDouble(productDto.getTotalTaxInclusive()));
-					//double netTotal = gstAmount + (itemTotalClac - itemDiscount);
+					
 					double netTotal = itemTotalClac - itemDiscount;
-					String itemTotal = decimalFormat.format(itemTotalClac);
+					//String itemTotal = decimalFormat.format(itemTotalClac);
 					
 					tabledata.append("<tr><td>");
 					tabledata.append(++count);
@@ -2381,40 +2245,20 @@ public class CommonServiceImpl  implements CommonService {
 					paymentTerm = paymentTermId+" Days";
 				}
 		}
-			/*SCRU-213 : Invoice No. should be not display hard coded (Refer to attached Screenshot)*/
 			
-			/*String invoiceAndReceiptNumber = org.apache.commons.lang3.StringUtils
-					.leftPad(String.valueOf(paymentRequest.getNotificationId()), 6, "0");
-			invoiceAndReceiptNumber = "RXC-" + invoiceAndReceiptNumber;*/
 			
 			String invoiceAndReceiptNumber = paymentRequest.getInvoiceNumber();
-			/*String gstNo = "";
-			if(paymentRequest.getMerchantDetails().getGstn() != null && !StringUtils.isEmpty(paymentRequest.getMerchantDetails().getGstn())) {
-				gstNo = ""+paymentRequest.getMerchantDetails().getGstn();
-			}
-			*/
 			
-		/*SCRU-211 : Created Date and Invoice Date should be invoice generated date (Current Date)*/
-			//Country country = clientAccount.getProfile().getCountry();
 			SimpleDateFormat dateFormateForReceipt = new SimpleDateFormat ("EEEE dd/MM/yyyy hh:mm a");
 			dateFormateForReceipt.setTimeZone(TimeZone.getTimeZone(country.getCountryTimeZone()));
 			String receiptDate =  dateFormateForReceipt.format(new Date());
-		//Date date = new Date();
-		//String invoiceAndReceiptGeneratedDate = CommonUtils.formatDate(date, "EEEE MM/dd/yy hh:mm a");
+		
 			String invoiceAndReceiptGeneratedDate = receiptDate;
 		String totalString = decimalFormat.format(tolal);
-		//String gstTotalString = String.format("%.2f", new Double(gstTotal));
-		//String gstTotalString = decimalFormat.format(gstTotal);
+		
 		String grandTotalString = decimalFormat.format(grandTotal);
 		String discountString = decimalFormat.format(discount);
-		/*String str=String.valueOf(gstTotal);
-		char gstTotalChar[] = String.valueOf(gstTotal).toCharArray();
-		int indexOfPoint =str.indexOf('.')+2;
-		String requiredData="";
-		for(int i=0;i<=indexOfPoint;i++) {
-			requiredData=requiredData+gstTotalChar[i];
-		}
-		String gstTotalString = requiredData;*/
+		
 		String gstTotalString = decimalFormat.format(gstTotal);
 		String recieptTableHeader = "";
 		String invoiceTableHeader = "";
@@ -2469,7 +2313,7 @@ public class CommonServiceImpl  implements CommonService {
 				totalHeader= "<td colspan=\"3\"></td><td  style=\"font-size:9pt;border-top: 2px solid #cdcdcd;border-left: 2px solid #cdcdcd;padding:5px;\">Total:</td>";
 				receiptSpan = 4;
 				
-				//System.out.println("Receipt generateInvoiceOrReceiptForClient"+country.getCurrencySymbol());
+				
 			
 			}
 		
@@ -2710,16 +2554,7 @@ public class CommonServiceImpl  implements CommonService {
 				"      <table class=\"billTable \" cellspacing=\"0\">\r\n" + 
 				invoiceTableHeader+ 
 				tabledata.toString() + "  "+
-				/*"        <tr>\r\n" + 
-				"          <td class=\"text-left\">1.</td>\r\n" + 
-				"          <td class=\"text-left\">Other meat and edible meat offal meatoff</td>\r\n" + 
-				"          <td class=\"text-right\">02080208</td>\r\n" + 
-				"          <td class=\"text-right\">10</td>\r\n" + 
-				"          <td class=\"text-right\">150</td>\r\n" + 
-				"          <td class=\"text-right\">0</td>\r\n" + 
-				"          <td class=\"text-right\">IGST@5</td>\r\n" + 
-				"          <td class=\"text-right\">1575</td>\r\n" + 
-				"        </tr>\r\n" + */
+				
 				"\r\n" + 
 				"        <tr>\r\n" + 
 				"          <td colspan="+tdSpan+" style=\"background-color:#cdcdcd;padding:1px\"></td>\r\n" + 
@@ -2768,7 +2603,7 @@ public class CommonServiceImpl  implements CommonService {
 				"\r\n" + 
 				"</html>";
 		
-		//System.out.println("invoice 2 ------------------------- "+invoice);
+		
 		
 		String receipt = "<!DOCTYPE html>\r\n" + "<html>\r\n" + "\r\n" + "<head>\r\n"
 				+ "    <meta charset=\"utf-8\" />\r\n"
@@ -2808,14 +2643,14 @@ public class CommonServiceImpl  implements CommonService {
 				+ "        .text-left {\r\n" + "            text-align: left;\r\n" + "        }\r\n" + "\r\n"
 				+ "        .billTable {\r\n" + "            width: 100%;\r\n" + "        }\r\n" + "\r\n"
 				+ "        .billTable th,\r\n" + "        .billTable td {\r\n" + "            padding: 8px 5px;\r\n"
-				+ "          }\r\n" + "\r\n" + "        .noMargin {\r\n" + "            margin: 0px;\r\n"
+				+ "        }\r\n" + "\r\n" + "        .noMargin {\r\n" + "            margin: 0px;\r\n"
 				+ "        }\r\n" + "\r\n" + "        .address {\r\n" + "            width: 300px;\r\n"
 				+ "            word-wrap: break-word;\r\n" + "        }\r\n" + "    </style>\r\n" + "</head>\r\n"
 				+ "\r\n" + "<body>\r\n" + "    <div class=\"container\">\r\n" + "        <div class=\"header\">\r\n"
 				+ "            <div class=\"text-center\">\r\n"
 				+ "                <h1 class=\"noMargin\" style=\"margin-bottom: 2px;\">Receipt</h1>\r\n"
 				+ "                <h5 class=\"noMargin\">" + receiptDate + "</h5>\r\n" +
-				// " <h5 class=\"noMargin\">Returns before 10/24/12</h5>\r\n" +
+				
 				"            </div>\r\n" + "        </div><br/>\r\n" + "        <div class=\"headerDetails\">\r\n"
 				+ "            <div class=\"addressDetails float-left\">\r\n" + "                <b>\r\n"
 				+ "                    Billed To:\r\n" + "                </b>\r\n" + "                \r\n"
@@ -2825,9 +2660,7 @@ public class CommonServiceImpl  implements CommonService {
 				+ purchaserProfile.getMobileNumber() + "\r\n" + "                <br/>\r\n"
 				+ "                <div class=\"address\">\r\n" + "                    "
 				+ purchaserProfile.getResidentialAddress() + "\r\n" + "                </div>\r\n" +
-				// " <!-- <br/>Technologies\r\n" +
-				// " <br/>H-122, second floor, sec-63\r\n" +
-				// " <br/>Noida. -->\r\n" +
+				
 				"            </div>\r\n" + "            <div class=\"bookingDetails float-right\">\r\n"
 				+ "                <table class=\"detailtable\" cellspacing=\"0\">\r\n" + "                    <tr>\r\n"
 				+ "                        <th>Receipt No</th>\r\n" + "                        <td>\r\n"
@@ -2864,9 +2697,9 @@ public class CommonServiceImpl  implements CommonService {
 				+ "        </div>\r\n" + "    </div>\r\n" + "    <!--main container-->\r\n" + "\r\n" + "</body>\r\n"
 				+ "\r\n" + "</html>";
 		
-		//System.out.println("receipt 2 ------------------------- "+receipt);
+		
 		if (type.equals("INVOICE")) {
-			// TODO write logic to generate invoice.
+			
 			outPutString = invoice;
 
 			
@@ -2958,7 +2791,7 @@ public class CommonServiceImpl  implements CommonService {
 							// call method to generate HTML string using thymeleaf
 						String invoiceByThymeleaf =	generateInvoiceAndPdfString(dto);
 							
-			System.out.println("invoiceHtmlGenerationByThymeleaf :-------\n  "+invoiceByThymeleaf+"\n -----------");
+			
 							//----------------------------------
 			
 			
@@ -3055,8 +2888,7 @@ public class CommonServiceImpl  implements CommonService {
 			// call method to generate HTML string using thymeleaf
 		String invoiceByThymeleaf =	generateInvoiceAndPdfString(dto);
 			
-System.out.println("receiptHtmlGenerationByThymeleaf :-------\n  "+invoiceByThymeleaf+"\n -----------");
-			//----------------------------------
+
 			
 			
 			
@@ -3066,9 +2898,15 @@ System.out.println("receiptHtmlGenerationByThymeleaf :-------\n  "+invoiceByThym
 		}
 	
 	
+	/**
+	 * use to save purchased product in database.
+	 * 
+	 * @param paymentRequest
+	 * @return
+	 */
 	public PaymentResponse savePurchasedProduct(PaymentRequest paymentRequest) {
 		
-		//PurchaserDto purchaserDto = paymentRequest.getPurchaserDetails();
+		
 	com.ireslab.sendx.electra.dto.PurchaserDto purchaserDto = paymentRequest.getPurchaserDetails();
 		
 		ClientInfoRequest clientInfoRequest = new ClientInfoRequest();
@@ -3091,6 +2929,9 @@ System.out.println("receiptHtmlGenerationByThymeleaf :-------\n  "+invoiceByThym
 		return paymentResponse;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.CommonService#updateDeviceSpecificParameter(com.ireslab.sendx.electra.model.SendxElectraRequest)
+	 */
 	@Override
 	 public SendxElectraResponse updateDeviceSpecificParameter(SendxElectraRequest sendxElectraRequest) {
 	  SendxElectraResponse sendxElectraResponse = new SendxElectraResponse();
@@ -3119,16 +2960,19 @@ System.out.println("receiptHtmlGenerationByThymeleaf :-------\n  "+invoiceByThym
 	  return sendxElectraResponse;
 	 }
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.CommonService#sendInvoicePayload(com.ireslab.sendx.electra.model.PaymentRequest)
+	 */
 	@Override
 	public PaymentResponse sendInvoicePayload(PaymentRequest paymentRequest) {
 		PaymentResponse paymentResponse = new PaymentResponse();
 		
-		// Identified the client and set the value to url.
+		
 				Account account = accountRepository.findBymobileNumber(new BigInteger(paymentRequest.getMerchantDetails().getMobileNumber()));
 				Profile profile =account.getProfile();
 				
 				ClientInfoRequest clientInfoRequest = new ClientInfoRequest();
-				//clientInfoRequest.setMobileNumber(account.getMobileNumber().toString());
+				
 				clientInfoRequest.setEmail(profile.getEmailAddress());
 				
 				ClientInfoResponse clientInformation = transactionalApiService.clientInformation(clientInfoRequest);
@@ -3141,14 +2985,10 @@ System.out.println("receiptHtmlGenerationByThymeleaf :-------\n  "+invoiceByThym
 		 JSONObject notificationForUser = new JSONObject();
 	     JSONObject dataForUser = new JSONObject();
 	     
-	     //productDetails
 	     
-	     JSONObject productDetails = new JSONObject();
-	     
-	   //  LOG.info("Merchant GCM Key : "+account.getGcmRegisterKey()+" User GCM Key : "+userAccount.getGcmRegisterKey());
-		 //--user payload
+	  
 	      try {
-			bodyForUser.put("to", "/topics/" + userAccount.getGcmRegisterKey());
+			bodyForUser.put("to",  userAccount.getGcmRegisterKey());
 			  bodyForUser.put("priority", "high");
 			  	notificationForUser.put("title", "Electra Notification");
 			  	notificationForUser.put("body", "Invoice for user "+userAccount.getMobileNumber());
@@ -3161,7 +3001,7 @@ System.out.println("receiptHtmlGenerationByThymeleaf :-------\n  "+invoiceByThym
 			  
 			  for (com.ireslab.sendx.electra.dto.ProductDto object : paymentRequest.getProductList()) {
 				  JSONObject product = new JSONObject();
-				  //Map<String, String> product =new HashMap<>();
+				 
 				    product.put("productCode", object.getProductCode());
 					product.put("itemNameOrDesc", object.getItemNameOrDesc());
 					product.put("itemPrice", object.getItemPrice());
@@ -3186,8 +3026,7 @@ System.out.println("receiptHtmlGenerationByThymeleaf :-------\n  "+invoiceByThym
 			  
 			  bodyForUser.put("productDetails", productArray);
 			  JSONObject merchantDetails = new JSONObject();
-			 // Map<String, String> merchantDetails = new HashMap<>(); 
-			  //MerchantDto merchantData = paymentRequest.getMerchantDetails();
+			 
 			  com.ireslab.sendx.electra.dto.MerchantDto merchantData = paymentRequest.getMerchantDetails();
 			  merchantDetails.put("countryDialCode",merchantData.getCountryDialCode() );
 			  merchantDetails.put("mobileNumber", ""+profile.getMobileNumber());
@@ -3204,8 +3043,9 @@ System.out.println("receiptHtmlGenerationByThymeleaf :-------\n  "+invoiceByThym
 			e.printStackTrace();
 			return paymentResponse;
 		}
-	      //bodyForUser.put("Message","Electra Notification User" );
+	     
 	      androidPushNotificationRequestForUser.setBody(bodyForUser);
+	      //androidPushNotificationRequestForUser.setFirebaseServiceKey(merchantData.getFirebaseServiceKey());
 	      
 	      //--send push notification
 	      pushNotification(androidPushNotificationRequestForUser);
@@ -3216,8 +3056,7 @@ System.out.println("receiptHtmlGenerationByThymeleaf :-------\n  "+invoiceByThym
 	      notification.setCreatedDate(new Date());
 	      notification.setEmailAddress(Userprofile.getEmailAddress());
 	      notification.setMobileNumber(""+Userprofile.getMobileNumber());
-	      System.out.println("bodyForUser"+bodyForUser);
-	      System.out.println("bodyForUser toString"+bodyForUser.toString());
+	     
 	      notification.setNotificationData(bodyForUser.toString());
 	      notification.setStatus(false);
 	      notification.setInvoice(true);
@@ -3232,35 +3071,35 @@ System.out.println("receiptHtmlGenerationByThymeleaf :-------\n  "+invoiceByThym
 
 	
 
+	/**
+	 * use to save notification data in database.
+	 * 
+	 * @param paymentRequest
+	 * @param notification
+	 */
 	private void saveNotifidationData(PaymentRequest paymentRequest,Notification notification) {
-		//System.out.println("saving notification data "+notification);
+		
 		notificationRepo.save(notification);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.CommonService#updateNotification(com.ireslab.sendx.electra.model.SendxElectraRequest)
+	 */
 	@Override
 	public SendxElectraResponse updateNotification(SendxElectraRequest sendxElectraRequest) {
 			
 		SendxElectraResponse sendxElectraResponse  = transactionalApiService.updateNotificationApi(sendxElectraRequest);
-		/*SendxElectraResponse sendxElectraResponse  =new SendxElectraResponse();
-		Notification notification = notificationRepo.findByNotificationId(sendxElectraRequest.getNotificationId());
-			if(notification!=null) {
-				notification.setStatus(sendxElectraRequest.isStatus());
-				notification.setModifiedDate(new Date());
-				notificationRepo.save(notification);
-				sendxElectraResponse.setCode(100);
-				sendxElectraResponse.setMessage("Deleted successfully.!");
-				return sendxElectraResponse;
-			}
-			sendxElectraResponse.setCode(101);
-			sendxElectraResponse.setMessage("notification not deleted successfully.!");*/
+		
 			
 			return sendxElectraResponse;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.CommonService#getAllNotification(java.lang.String)
+	 */
 	@Override
 	public SendxElectraResponse getAllNotification(String mobileNumber) {
-		//transactionalApiService.getAllNotification(correlationId);
-				//List<Notification> notificationList = notificationRepo.findAllBymobileNumber(false, mobileNumber);
+		
 		SendxElectraResponse sendxElectraResponse =new SendxElectraResponse();
 				
 		Account account = accountRepository.findBymobileNumber(new BigInteger(mobileNumber));
@@ -3281,6 +3120,9 @@ System.out.println("receiptHtmlGenerationByThymeleaf :-------\n  "+invoiceByThym
 		return sendxElectraResponse;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.CommonService#searchUserByuniqueCodeInElectra(java.lang.String)
+	 */
 	@Override
 	public UserProfile searchUserByuniqueCodeInElectra(String uniqueCode) {
 		LOG.info("Searching user with uniqueCode :"+uniqueCode);
@@ -3288,13 +3130,19 @@ System.out.println("receiptHtmlGenerationByThymeleaf :-------\n  "+invoiceByThym
 		return searchUserProfileByUniqueCode;
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.CommonService#deleteNotificationData(com.ireslab.sendx.electra.model.NotificationRequest)
+	 */
 	@Override
 	public NotificationResponse deleteNotificationData(NotificationRequest notificationRequest) {
-		//LOG.info("Searching user with uniqueCode :"+uniqueCode);
+		LOG.info("Request for delete notification");
 		NotificationResponse notificationResponse = transactionalApiService.deleteNotificationData(notificationRequest);
 		return notificationResponse;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.CommonService#searchUserByDialCodeAndMobileInElectra(java.lang.String, java.lang.Long)
+	 */
 	@Override
 	public UserProfile searchUserByDialCodeAndMobileInElectra(String beneficiaryCountryDialCode,
 			Long beneficiaryMobileNumber) {
@@ -3304,15 +3152,16 @@ System.out.println("receiptHtmlGenerationByThymeleaf :-------\n  "+invoiceByThym
 
 	}
 
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.CommonService#downloadInvoicePdf(com.ireslab.sendx.electra.model.PaymentRequest, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+	 */
 	@Override
 	public void downloadInvoicePdf(PaymentRequest paymentRequest, HttpServletRequest request,
 			HttpServletResponse response) {
 		ClientInfoRequest clientInfoRequest = new ClientInfoRequest();
 		clientInfoRequest.setEmail(paymentRequest.getMerchantDetails().getEmailAddress());
 
-		Account account = accountRepository
-				.findBymobileNumber(new BigInteger(paymentRequest.getMerchantDetails().getMobileNumber()));
-
+		//Get purchaser account from electra server based on unique code.
 		UserProfile purchaserProfile = transactionalApiService
 				.searchUserProfileByUniqueCode(paymentRequest.getPurchaserDetails().getUniqueCode());
 		ClientInfoResponse clientInformation = transactionalApiService.clientInformation(clientInfoRequest);
@@ -3324,12 +3173,11 @@ System.out.println("receiptHtmlGenerationByThymeleaf :-------\n  "+invoiceByThym
 		invoiceAndReceiptNumber = "RXC-" + invoiceAndReceiptNumber;
 		paymentRequest.setInvoiceNumber(invoiceAndReceiptNumber);
 		
-		/*String invoice = generateInvoiceOrReceipt(paymentRequest, account, purchaserProfile, clientInformation,
-				"INVOICE");*/
+		
 		
 		String invoice=generateInvoiceOrReceipt(paymentRequest, merchantProfile, purchaserProfile, clientInformation, "INVOICE");
 
-		File invoiceFile = new File("./invoice.pdf");
+		
 		response.setContentType("application/pdf");
 		
 		
@@ -3344,7 +3192,7 @@ System.out.println("receiptHtmlGenerationByThymeleaf :-------\n  "+invoiceByThym
 		directory.append("pdf");
 
 		String sFontDir = directory.toString();
-		//System.out.println("*****************************" + new File(sFontDir));
+		
 
 		XMLWorkerFontProvider fontImp = new XMLWorkerFontProvider(sFontDir, null);
 		FontFactory.setFontImp(fontImp);
@@ -3357,13 +3205,13 @@ System.out.println("receiptHtmlGenerationByThymeleaf :-------\n  "+invoiceByThym
 			pdfWriterForInvoice = PdfWriter.getInstance(documentForInvoice, response.getOutputStream());
 
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		} catch (DocumentException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}
 
@@ -3372,19 +3220,22 @@ System.out.println("receiptHtmlGenerationByThymeleaf :-------\n  "+invoiceByThym
 
 		try {
 
-			/*workerForInvoice.parseXHtml(pdfWriterForInvoice, documentForInvoice, new StringReader(invoice));*/
+			
 			
 			workerForInvoice.parseXHtml(pdfWriterForInvoice, documentForInvoice,
 					new ByteArrayInputStream(invoice.getBytes()), null, null, fontImp);
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}
 
 		documentForInvoice.close();
 
 	}
+	/* (non-Javadoc)
+	 * @see com.ireslab.sendx.service.CommonService#generateInvoiceAndPdfString(com.ireslab.sendx.electra.dto.ReceiptAndInvoiceUtilDto)
+	 */
 	@Override
 	public String generateInvoiceAndPdfString(ReceiptAndInvoiceUtilDto dto) {
 		Context context = new Context();
