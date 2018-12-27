@@ -75,7 +75,7 @@
 			<artifactId>stellar-sdk</artifactId>
 			<version>0.1.9</version>
 			<scope>system</scope>
-		<systemPath>${project.basedir}/lib/stellar-sdk.jar</systemPath>
+		<systemPath>${project.basedir}/lib/stellar-sdk-0.1.9.jar</systemPath>
 		</dependency>
 		
 		<!-- mvn install:install-file -Dfile=sendx-common-lib-1.1.jar -DgroupId=com.ireslab -Dversion=1.1 -DartifactId=sendx-common-lib  -Dpackaging=jar -->
