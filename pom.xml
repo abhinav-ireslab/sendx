@@ -6,7 +6,7 @@
 	<groupId>com.ireslab</groupId>
 	<artifactId>sendx</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 
 	<name>sendx</name>
 	<description>SendX Server Component</description>
@@ -26,7 +26,10 @@
 	</properties>
 
 	<dependencies>
-	
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
 	
 	 
 
@@ -71,6 +74,8 @@
 			<groupId>com.stellar.sdk</groupId>
 			<artifactId>stellar-sdk</artifactId>
 			<version>0.1.9</version>
+			<scope>system</scope>
+		<systemPath>${project.basedir}/lib/stellar-sdk.jar</systemPath>
 		</dependency>
 		
 		<!-- mvn install:install-file -Dfile=sendx-common-lib-1.1.jar -DgroupId=com.ireslab -Dversion=1.1 -DartifactId=sendx-common-lib  -Dpackaging=jar -->
