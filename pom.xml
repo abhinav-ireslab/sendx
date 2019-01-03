@@ -6,9 +6,8 @@
 	<groupId>com.ireslab</groupId>
 	<artifactId>sendx</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>jar</packaging>
-
 	<name>sendx</name>
+	
 	<description>SendX Server Component</description>
 
 	<parent>
