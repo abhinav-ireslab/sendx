@@ -26,7 +26,7 @@ pipeline {
        sh 'docker push docker030303/sendx'
      }
    }
-         stage('Docker run'){
+         stage('Docker container stop'){
 	  agent any
 		  steps {
 	  sh 'docker run -p 192.168.1.29:8085:8085 -t docker030303/sendx'
