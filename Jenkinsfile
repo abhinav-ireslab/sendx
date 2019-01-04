@@ -11,25 +11,22 @@ pipeline {
 		echo 'Making build.'
 		sh 'mvn clean install'
       }
-    } 
+    }
+	           stage('Docker container stop'){
+	  agent any
+		  steps {
+	         sh 'docker ps -a -q  --filter ancestor=docker030303/sendx'
+      sh 'docker stop -t $(docker ps -q --filter ancestor=docker030303/sendx)'
+      sh 'docker rm $(docker ps -a -q -f ancestor=docker030303/sendx)'
+		  }
+		   }
+	  
   stage('Docker Build') {
       agent any
       steps {
       sh 'docker build -t docker030303/sendx:latest .'   
       }
     }
-       
-      
-         stage('Docker container stop'){
-	  agent any
-		  steps {
-	         sh 'docker ps -a -q  --filter ancestor=docker030303/sendx'
-      sh 'docker stop -t $(docker ps -q --filter ancestor=docker030303/sendx)'
-      sh 'docker rm $(docker ps -a -q -f ancestor=docker030303/sendx)'
 
-   
-     
-      }
-    }
   }
 }
