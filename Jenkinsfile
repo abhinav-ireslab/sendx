@@ -37,7 +37,7 @@ pipeline {
 	stage('Run container') {
         agent any
         steps {
-       		sh 'docker run -d -p 192.168.1.29:8085:8085 -t docker030303/sendx'
+       		sh 'docker run -d -p 192.168.1.19:8085:8085 -t docker030303/sendx'
       }
     }
   }
