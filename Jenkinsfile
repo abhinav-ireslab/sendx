@@ -29,7 +29,8 @@ pipeline {
          stage('Docker container stop'){
 	  agent any
 		  steps {
-	  sh 'docker run -p 192.168.1.29:8085:8085 -t docker030303/sendx'
+	         sh 'docker ps -a -q  --filter ancestor=docker030303/sendx'
+       sh 'docker rm $(docker stop $(docker ps -a -q --filter ancestor=docker030303/sendx --format="{{.ID}}"))'
 
    
      
