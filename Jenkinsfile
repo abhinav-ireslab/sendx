@@ -26,7 +26,7 @@ pipeline {
        sh 'docker push docker030303/sendx'
      }
    }
-       stage('stop container') {
+       stage('Stop container') {
        agent any
        step {
        sh 'docker ps -a -q  --filter ancestor=docker030303/sendx'
