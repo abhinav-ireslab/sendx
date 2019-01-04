@@ -29,8 +29,7 @@ pipeline {
        stage('stop container') {
        agent any
        step {
-       sh 'docker ps -a -q  --filter ancestor=docker030303/sendx'
-       sh 'docker rm $(docker stop $(docker ps -a -q --filter ancestor=docker030303/sendx --format="{{.ID}}"))'
+
       }
     }
   }
