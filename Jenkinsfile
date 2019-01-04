@@ -40,5 +40,12 @@ pipeline {
        		sh 'docker run -d -p 192.168.1.29:8085:8085 -t docker030303/sendx'
       }
     }
+	  
+	stage('Remove unused Image') {
+        agent any
+        steps {
+       		sh 'docker rmi $(docker images -f "dangling=true" -q)'
+      }
+    }
   }
 }
