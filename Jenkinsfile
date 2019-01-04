@@ -24,7 +24,7 @@ pipeline {
 	  agent any
 		  steps {
 	         sh 'docker ps -a -q  --filter ancestor=docker030303/sendx'
-       sh 'docker rm -f $(docker stop -t $(docker ps -a -q --filter ancestor=docker030303/sendx --format="{{.ID}}"))'
+       sh 'docker rm -f (docker stop -t (docker ps -a -q --filter ancestor=docker030303/sendx --format="{{.ID}}"))'
 
    
      
