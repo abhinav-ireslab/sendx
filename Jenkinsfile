@@ -19,18 +19,12 @@ pipeline {
       }
     }
        
-       stage('Docker push') {
-       agent any
-       steps {
-       sh 'docker login -u docker030303 -p Abhinav@123Ires'
-       sh 'docker push docker030303/sendx'
-     }
-   }
+      
          stage('Docker container stop'){
 	  agent any
 		  steps {
 	         sh 'docker ps -a -q  --filter ancestor=docker030303/sendx'
-       sh 'docker rm -v $(docker stop -t $(docker ps -a -q --filter ancestor=docker030303/sendx --format="{{.ID}}"))'
+       sh 'docker rm -v $(docker stop --time 10 $(docker ps -a -q --filter ancestor=docker030303/sendx --format="{{.ID}}"))'
 
    
      
