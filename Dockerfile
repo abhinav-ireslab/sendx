@@ -9,4 +9,5 @@
 FROM java:8  
 COPY /target/sendx-0.0.1-SNAPSHOT.jar /target/sendx-0.0.1-SNAPSHOT.jar
 WORKDIR server/target
+#WORKDIR /usr/share/tomcat8/.jenkins/workspace/Sendx
 CMD ["java","-jar","/target/sendx-0.0.1-SNAPSHOT.jar"]
