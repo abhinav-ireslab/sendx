@@ -24,7 +24,7 @@ pipeline {
          stage('Docker Build') {
          agent any
          steps {
-        	sh 'docker build -t docker030303/sendx:latest .'   
+        	sh 'docker build -t docker030303/sendx:1.0.1 .'   
     }
  }
 	stage('Docker push') {
